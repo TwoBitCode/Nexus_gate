@@ -18,4 +18,13 @@
 ### Gameplay 🖥️  
 Designed for PC, **Nexus Gate: Zion** immerses players in a rich, story-driven experience that requires both strategic thinking and moral reflection.
 
----
+
+## 👥 Team Members
+
+- **Lead Developers**: Vivian Umansky & Miriam Nagar  
+  *Roles*: Coding, design, and implementation.
+
+## 🔧 Installation
+
+*(Note: Installation instructions will be added once the project is ready for release)*
+
