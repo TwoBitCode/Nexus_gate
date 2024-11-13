@@ -2,7 +2,7 @@
 
 > *"In a world of borders, diplomacy is the ultimate power."* 🌌
 
-Discover the core formal elements of *Nexus Gate: Zion* and detailed game insights on our [Wiki page](https://github.com/TwoBitCode/Nexus_gate/wiki).
+Discover the core formal elements of *Nexus Gate: Zion* and detailed game insights on our [Wiki page](https://github.com/TwoBitCode/Nexus_gate/wiki/Formal-Elements).
 
 ![DALL·E 2024-11-11 11 18 39 - A stylized, drawn depiction from the perspective of a border control officer at a futuristic checkpoint](https://github.com/user-attachments/assets/7849f443-6854-46ad-867f-f7edcc3903d3)
 
