@@ -60,9 +60,18 @@ public class DecisionManager : MonoBehaviour
         Invoke(nameof(NextApplicant), 1.5f); // Delay for feedback
     }
 
+    public int applicantsProcessed = 0; // Tracks the number of applicants
+
     private void NextApplicant()
     {
+        applicantsProcessed++;
         resultText.text = ""; // Clear the result text
         docManager.GenerateDocument(); // Generate the next applicant's document
+
+        // Update the UI counter
+        TextMeshProUGUI counterText = GameObject.Find("ApplicantCounter").GetComponent<TextMeshProUGUI>();
+        counterText.text = $"Applicants Processed: {applicantsProcessed}";
     }
+
+
 }
