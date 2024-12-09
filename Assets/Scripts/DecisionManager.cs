@@ -6,12 +6,12 @@ public class DecisionManager : MonoBehaviour
     public DocumentManager docManager; // Reference to DocumentManager
     public TextMeshProUGUI resultText; // Feedback text
     public TextMeshProUGUI endGameText; // Display end-game message
+    public GameObject gameOverPanel; // Reference to the Game Over panel
 
     private int humanReputation = 50; // Human faction reputation
     private int alienReputation = 50; // Alien faction reputation
     private int applicantsProcessed = 0; // Tracks processed applicants
     private int maxApplicants = 20; // Endgame after max applicants
-    private int level = 1; // Difficulty level
 
     public void Approve()
     {
@@ -25,64 +25,78 @@ public class DecisionManager : MonoBehaviour
 
     private void EvaluateDecision(bool isApproved)
     {
-        // Parse the document details
         string[] documentLines = docManager.documentText.text.Split('\n');
         string origin = documentLines[2].Split(':')[1].Trim();
         string documentType = documentLines[3].Split(':')[1].Trim();
-        bool isAlien = origin == "Zarquinia" || origin == "Nebulon IV" || origin == "Andromeda Prime";
+
+        // Define alien and human planets
+        string[] alienPlanets = { "Zarquinia", "Nebulon IV", "Andromeda Prime" };
+        string[] humanPlanets = { "Earth", "Mars", "Jupiter" };
+
+        bool isAlien = System.Array.Exists(alienPlanets, planet => planet == origin);
+        bool isHuman = System.Array.Exists(humanPlanets, planet => planet == origin);
 
         if (isAlien)
         {
-            // Handle Alien Cases
             if (isApproved)
             {
                 alienReputation += 10; // Positive impact for aliens
-                resultText.text = "Alien Accepted!";
+                resultText.text = $"Alien from {origin} Approved!";
             }
             else
             {
                 alienReputation -= 10; // Negative impact for aliens
-                resultText.text = "Alien Denied!";
+                resultText.text = $"Alien from {origin} Denied!";
             }
         }
-        else
+        else if (isHuman)
         {
-            // Handle Human Cases
             int age = int.Parse(documentLines[1].Split(':')[1].Trim());
 
             if (age < 16 || age > 65)
             {
-                // Human Age Invalid
                 if (isApproved)
                 {
-                    humanReputation -= 5; // Penalize for approving an invalid human
-                    resultText.text = "Error: Human Age Invalid!";
+                    humanReputation -= 5;
+                    EndGameImmediately($"Error: Human from {origin} - Age Invalid!");
+                    return;
                 }
                 else
                 {
-                    resultText.text = "Human Denied (Correct)!";
+                    resultText.text = $"Human from {origin} Denied (Correct)!";
                 }
             }
             else
             {
-                // Human Age is Valid
                 if (isApproved)
                 {
                     humanReputation += 5; // Reward for approving a valid human
-                    resultText.text = "Human Accepted!";
+                    resultText.text = $"Human from {origin} Approved!";
                 }
                 else
                 {
-                    humanReputation -= 5; // Penalize for denying a valid human
-                    resultText.text = "Error: Valid Human Denied!";
+                    humanReputation -= 5;
+                    EndGameImmediately($"Error: Valid Human from {origin} Denied!");
+                    return;
                 }
             }
         }
+        else
+        {
+            if (isApproved)
+            {
+                // Mistake: Approved an unknown origin
+                humanReputation -= 10;
+                EndGameImmediately($"Critical System Failure: Unknown Origin '{origin}' Approved!");
+                return;
+            }
+            else
+            {
+                resultText.text = $"Applicant from Unknown Origin '{origin}' Denied (Correct)!";
+            }
+        }
 
-        // Check reputations for potential end-game triggers
         CheckReputationLevels();
-
-        // Move to next applicant after delay
         Invoke(nameof(NextApplicant), 1.5f);
     }
 
@@ -90,11 +104,11 @@ public class DecisionManager : MonoBehaviour
     {
         if (humanReputation <= 0)
         {
-            EndGame("Humans have lost all trust in you!");
+            EndGameImmediately("Humans have lost all trust in you!");
         }
         else if (alienReputation <= 0)
         {
-            EndGame("Aliens are furious and refuse to cooperate!");
+            EndGameImmediately("Aliens are furious and refuse to cooperate!");
         }
     }
 
@@ -102,65 +116,34 @@ public class DecisionManager : MonoBehaviour
     {
         applicantsProcessed++;
 
-        // Introduce dynamic difficulty
-        if (applicantsProcessed % 5 == 0)
-        {
-            level++;
-            Debug.Log($"Level Up! Now at Level {level}");
-        }
-
         if (applicantsProcessed >= maxApplicants)
         {
-            EndGame("You have processed all applicants!");
+            EndGameImmediately("You have processed all applicants!");
             return;
         }
 
-        // Reset the result text and generate a new document
-        resultText.text = "";
+        resultText.text = "Waiting for Decision...";
         docManager.GenerateDocument();
-
-        // Trigger random events occasionally
-        if (Random.Range(0, 100) < 20) // 20% chance
-        {
-            TriggerRandomEvent();
-        }
     }
 
-    private void EndGame(string message)
+    private void EndGameImmediately(string message)
     {
-        // Display the end-game message
-        endGameText.text = message;
-        endGameText.gameObject.SetActive(true); // Ensure EndGameText is visible
+        // Cancel any further actions
+        CancelInvoke(nameof(NextApplicant));
 
-        // Hide ResultText to avoid overlap
+        // Clear applicant text
+        docManager.documentText.text = "";
+
+        // Clear feedback text
         resultText.text = "";
-        resultText.gameObject.SetActive(false);
+
+        // Display Game Over message
+        endGameText.text = message;
+        gameOverPanel.SetActive(true); // Show the Game Over panel
 
         // Disable buttons
         GameObject.Find("ApproveButton").GetComponent<UnityEngine.UI.Button>().interactable = false;
         GameObject.Find("DenyButton").GetComponent<UnityEngine.UI.Button>().interactable = false;
-
-        // Stop further applicant processing
-        CancelInvoke(nameof(NextApplicant));
     }
 
-
-
-    private void TriggerRandomEvent()
-    {
-        int eventChance = Random.Range(0, 100);
-
-        if (eventChance < 10)
-        {
-            resultText.text = "Security Alert! Immediate decision required!";
-        }
-        else if (eventChance < 20)
-        {
-            resultText.text = "VIP Alien requests urgent clearance!";
-        }
-        else
-        {
-            resultText.text = "Anomaly detected in document verification!";
-        }
-    }
 }
