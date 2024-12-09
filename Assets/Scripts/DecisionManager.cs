@@ -25,19 +25,24 @@ public class DecisionManager : MonoBehaviour
 
     private void EvaluateDecision(bool isApproved)
     {
+        // Split the document lines and trim spaces
         string[] documentLines = docManager.documentText.text.Split('\n');
-        string origin = documentLines[2].Split(':')[1].Trim();
+        string origin = documentLines[2].Split(':')[1].Trim(); // Trim leading and trailing spaces
         string documentType = documentLines[3].Split(':')[1].Trim();
+
+        Debug.Log($"Parsed Origin: '{origin}'");
 
         // Define alien and human planets
         string[] alienPlanets = { "Zarquinia", "Nebulon IV", "Andromeda Prime" };
         string[] humanPlanets = { "Earth", "Mars", "Jupiter" };
 
-        bool isAlien = System.Array.Exists(alienPlanets, planet => planet == origin);
-        bool isHuman = System.Array.Exists(humanPlanets, planet => planet == origin);
+        // Ensure trimmed and normalized comparison
+        bool isAlien = System.Array.Exists(alienPlanets, planet => planet.Equals(origin, System.StringComparison.OrdinalIgnoreCase));
+        bool isHuman = System.Array.Exists(humanPlanets, planet => planet.Equals(origin, System.StringComparison.OrdinalIgnoreCase));
 
         if (isAlien)
         {
+            Debug.Log($"Alien identified from {origin}");
             if (isApproved)
             {
                 alienReputation += 10; // Positive impact for aliens
@@ -51,7 +56,8 @@ public class DecisionManager : MonoBehaviour
         }
         else if (isHuman)
         {
-            int age = int.Parse(documentLines[1].Split(':')[1].Trim());
+            Debug.Log($"Human identified from {origin}");
+            int age = int.Parse(documentLines[1].Split(':')[1].Trim()); // Ensure age is also trimmed
 
             if (age < 16 || age > 65)
             {
@@ -83,6 +89,7 @@ public class DecisionManager : MonoBehaviour
         }
         else
         {
+            Debug.Log($"Unknown origin: {origin}");
             if (isApproved)
             {
                 // Mistake: Approved an unknown origin
@@ -95,22 +102,12 @@ public class DecisionManager : MonoBehaviour
                 resultText.text = $"Applicant from Unknown Origin '{origin}' Denied (Correct)!";
             }
         }
-
-        CheckReputationLevels();
         Invoke(nameof(NextApplicant), 1.5f);
     }
 
-    private void CheckReputationLevels()
-    {
-        if (humanReputation <= 0)
-        {
-            EndGameImmediately("Humans have lost all trust in you!");
-        }
-        else if (alienReputation <= 0)
-        {
-            EndGameImmediately("Aliens are furious and refuse to cooperate!");
-        }
-    }
+
+
+
 
     private void NextApplicant()
     {
