@@ -11,7 +11,7 @@ public class DecisionManager : MonoBehaviour
     private int humanReputation = 50; // Human faction reputation
     private int alienReputation = 50; // Alien faction reputation
     private int applicantsProcessed = 0; // Tracks processed applicants
-    private int maxApplicants = 20; // Endgame after max applicants
+    private int maxApplicants = 10; // Endgame after max applicants
 
     public void Approve()
     {
