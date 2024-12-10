@@ -17,8 +17,6 @@ public class StartGameManager : MonoBehaviour
         // Load the main game scene or activate the game
         Debug.Log("Game Started!");
 
- 
-
         // If you want to close the rules panel:
         gameObject.SetActive(false);
     }
