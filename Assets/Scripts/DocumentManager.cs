@@ -20,9 +20,9 @@ public class DocumentManager : MonoBehaviour
 
     private void Start()
     {
-        // Load images from Assets/Images/Humans and Assets/Images/Aliens
-        humanImages = LoadImagesFromFolder("Assets/Images/Humans");
-        alienImages = LoadImagesFromFolder("Assets/Images/Aliens");
+        // Load images from the Resources folder
+        humanImages = LoadImagesFromResources("Images/Humans");
+        alienImages = LoadImagesFromResources("Images/Aliens");
 
         Debug.Log($"Loaded {humanImages?.Length ?? 0} human images.");
         Debug.Log($"Loaded {alienImages?.Length ?? 0} alien images.");
@@ -31,28 +31,14 @@ public class DocumentManager : MonoBehaviour
         GenerateDocument();
     }
 
-    private Sprite[] LoadImagesFromFolder(string folderPath)
+    private Sprite[] LoadImagesFromResources(string resourceFolder)
     {
-        string[] textureFiles = System.IO.Directory.GetFiles(folderPath, "*.png");
+        Sprite[] sprites = Resources.LoadAll<Sprite>(resourceFolder);
 
-        if (textureFiles.Length == 0)
+        if (sprites.Length == 0)
         {
-            Debug.LogError($"No images found in folder: {folderPath}");
-            return new Sprite[0];
+            Debug.LogError($"No images found in folder: {resourceFolder}");
         }
-
-        Sprite[] sprites = new Sprite[textureFiles.Length];
-
-        for (int i = 0; i < textureFiles.Length; i++)
-        {
-            Texture2D texture = new Texture2D(2, 2);
-            byte[] fileData = System.IO.File.ReadAllBytes(textureFiles[i]);
-            texture.LoadImage(fileData);
-
-            // Create a sprite from the texture
-            sprites[i] = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f, 0.5f));
-        }
-
         return sprites;
     }
 
@@ -85,14 +71,12 @@ public class DocumentManager : MonoBehaviour
         int age = Random.Range(16, 85);
 
         // Update the document text with all details
-        documentText.text = $"<b>Name:{name}\n" +
-                            $"<b>Age:{age}\n" +
-                            $"<b>Origin:{origin}\n" + // No extra space after "Origin:"
-                            $"<b>Document: {documentType}";
+        documentText.text = $"Name: {name}\n" +
+                            $"Age: {age}\n" +
+                            $"Origin: {origin}\n" +
+                            $"Document: {documentType}";
 
         // Update the applicant image
         applicantImage.sprite = faceImage;
-
-
     }
 }
