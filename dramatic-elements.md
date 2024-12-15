@@ -1,4 +1,4 @@
-<div dir="rtl">
+
 # Nexus Gate: Zion - רכיבים דרמטיים
 
 ## 1. אתגר
