@@ -5,136 +5,140 @@ using UnityEngine.UI;
 public class PassportManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    public TextMeshProUGUI passportText; // Displays applicant's passport details
-    public Image applicantImage; // Displays applicant's face
-    public Image regionSymbol; // Displays the symbol for the applicant's origin
-    private Sprite[] fakeSymbols; // Fake region symbols
+    public TextMeshProUGUI passportText; // Passport details text
+    public Image applicantImage;         // Applicant's face image
+    public Image regionSymbol;           // Region symbol
+
+    [Header("UI Panels")]
+    public GameObject applicantPanel;    // Panel with applicant's image
+    public GameObject documentPanel;     // Panel for passport details
+
+    [Header("Decision Buttons")]
+    public Button approveButton;         // Approve button
+    public Button denyButton;            // Deny button
+
+    [Header("Age Settings")]
+    [SerializeField] private int minAlienAge = 25;
+    [SerializeField] private int maxAlienAge = 120;
+    [SerializeField] private int minFakeAge = 5;
+    [SerializeField] private int maxFakeAge = 150;
 
     private string[] alienNames = { "Zarqa Elion", "Nebulo Xel", "Quorin Arak", "Vetra Shiran", "Xilra Talos" };
     private string[] alienOrigins = { "Andromeda Prime", "Galva-Theta", "Nebulon IV", "Xyron-9", "Zarquinia" };
-    private Sprite[] alienSymbols; // Symbols for the alien origins
 
     private string[] fakeNames = { "Zevon-X", "Aria-12", "Rho Delta", "Liran-77", "Korin Prime" };
     private string[] fakeOrigins = { "Void Nexus", "Aether Zone", "Lost Sector-9", "Phantom Ring", "Oblivion Expanse" };
 
     private Sprite[] alienImages;
+    private Sprite[] regionSymbols;
+    private Sprite[] fakeRegionSymbols;
 
-    [Header("Applicant Settings")]
-    public int minAlienAge = 25;
-    public int maxAlienAge = 120;
-    public int minFakeAge = 5;
-    public int maxFakeAge = 150;
+    private string currentName;
+    private string currentOrigin;
+    private int currentAge;
+    private Sprite currentFaceImage;
+    private Sprite currentRegionSymbol;
 
-    private void Start()
+    private bool isResourcesLoaded = false;
+    public int MinAlienAge { get { return minAlienAge; } }
+    public int MaxAlienAge { get { return maxAlienAge; } }
+
+    private void Awake()
     {
-        // Load images from the Resources folder
-        alienImages = LoadImagesFromResources("Images/Aliens");
-        alienSymbols = LoadImagesFromResources("Images/RegionSymbols");
-        Debug.Log($"Loaded {alienImages?.Length ?? 0} alien images and {alienSymbols?.Length ?? 0} region symbols.");
-        fakeSymbols = LoadImagesFromResources("Images/FakeRegionSymbols");
-
-        if (fakeSymbols.Length != fakeOrigins.Length)
-        {
-            Debug.LogError("Fake symbols count does not match fake origins count!");
-        }
-
-        // Verify loaded images
-        if (alienImages.Length == 0 || alienSymbols.Length == 0)
-        {
-            Debug.LogError("Failed to load images. Make sure images exist in Resources/Images.");
-            return;
-        }
-
-        // Generate the first passport
-        GeneratePassport();
+        LoadResources();
+        Debug.Log("PassportManager Awake: Resources loaded successfully.");
     }
 
-    private Sprite[] LoadImagesFromResources(string resourceFolder)
+    public bool AreResourcesLoaded()
     {
-        Sprite[] sprites = Resources.LoadAll<Sprite>(resourceFolder);
+        return isResourcesLoaded;
+    }
 
-        if (sprites == null || sprites.Length == 0)
+
+    public void LoadResources()
+    {
+        if (isResourcesLoaded) return; // Avoid reloading resources
+
+        // Load all resources
+        alienImages = Resources.LoadAll<Sprite>("Images/Aliens");
+        regionSymbols = Resources.LoadAll<Sprite>("Images/RegionSymbols");
+        fakeRegionSymbols = Resources.LoadAll<Sprite>("Images/FakeRegionSymbols");
+
+        if (alienImages.Length == 0 || regionSymbols.Length == 0 || fakeRegionSymbols.Length == 0)
         {
-            Debug.LogError($"No images found in folder: Resources/{resourceFolder}. Check folder structure and sprite settings.");
-            return new Sprite[0]; // Return an empty array to avoid null reference
+            Debug.LogError("Resources failed to load! Check the folder paths.");
         }
+        else
+        {
+            isResourcesLoaded = true;
+            Debug.Log("Resources loaded successfully.");
+        }
+    }
 
-        Debug.Log($"Successfully loaded {sprites.Length} images from Resources/{resourceFolder}");
-        return sprites;
+
+    public bool IsResourcesLoaded()
+    {
+        return isResourcesLoaded;
     }
 
     public void GeneratePassport()
     {
-        if (passportText == null || applicantImage == null || regionSymbol == null)
+        if (!isResourcesLoaded)
         {
-            Debug.LogError("Missing UI elements. Please check PassportManager references.");
+            Debug.LogError("Resources are still not loaded! Cannot generate passport.");
             return;
         }
 
-        string name, origin;
-        Sprite faceImage = null;
-        Sprite symbolImage = null;
-        int age;
-
+        Debug.Log("Generating Passport...");
         float randomType = Random.value;
 
-        if (randomType < 0.8f && alienImages != null && alienImages.Length > 0)
+        if (randomType < 0.8f) // Valid applicant
         {
-            // Generate a valid alien applicant
-            int originIndex = Random.Range(0, alienOrigins.Length);
-            name = alienNames[originIndex % alienNames.Length]; // Match name order to origins
-            origin = alienOrigins[originIndex];
-            faceImage = alienImages[Random.Range(0, alienImages.Length)];
-            symbolImage = alienSymbols[originIndex]; // Match symbol to origin order
-            age = Random.Range(minAlienAge - 5, maxAlienAge + 5);
+            int index = Random.Range(0, alienNames.Length);
+            currentName = alienNames[index];
+            currentOrigin = alienOrigins[index];
+            currentAge = Random.Range(minAlienAge, maxAlienAge);
+            currentFaceImage = alienImages[Random.Range(0, alienImages.Length)];
+            currentRegionSymbol = regionSymbols[index];
         }
-        else
+        else // Fake applicant
         {
-            // Generate a fake applicant with a random image
-            int fakeIndex = Random.Range(0, fakeOrigins.Length);
-            name = fakeNames[fakeIndex % fakeNames.Length];
-            origin = fakeOrigins[fakeIndex];
-
-            // Assign the fake symbol
-            symbolImage = fakeSymbols[fakeIndex];
-
-            // Use random alien images for fake applicants
-            if (alienImages != null && alienImages.Length > 0)
-            {
-                faceImage = alienImages[Random.Range(0, alienImages.Length)];
-            }
-            else
-            {
-                Debug.LogWarning("No alien images available, loading default image.");
-                faceImage = Resources.Load<Sprite>("Images/DefaultImage");
-            }
-
-            age = Random.Range(minFakeAge, maxFakeAge);
+            int index = Random.Range(0, fakeNames.Length);
+            currentName = fakeNames[index];
+            currentOrigin = fakeOrigins[index];
+            currentAge = Random.Range(minFakeAge, maxFakeAge);
+            currentFaceImage = alienImages[Random.Range(0, alienImages.Length)];
+            currentRegionSymbol = fakeRegionSymbols[index];
         }
 
-        // Update passport details text
-        passportText.text = $"Name: {name}\nAge: {age}\nOrigin: {origin}";
+        UpdateApplicantPanel();
+    }
 
-        // Update applicant image
-        if (faceImage != null)
-        {
-            applicantImage.sprite = faceImage;
-        }
-        else
-        {
-            Debug.LogWarning("No image found, using default placeholder.");
-            applicantImage.sprite = Resources.Load<Sprite>("Images/DefaultImage");
-        }
+    private void UpdateApplicantPanel()
+    {
+        applicantImage.sprite = currentFaceImage;
+        applicantPanel.SetActive(true);
+        Debug.Log("Applicant updated on the panel.");
+    }
 
-        // Update region symbol
-        if (symbolImage != null)
-        {
-            regionSymbol.sprite = symbolImage;
-        }
-        else
-        {
-            Debug.LogWarning("No symbol image found, using default placeholder.");
-            regionSymbol.sprite = Resources.Load<Sprite>("Images/DefaultRegionSymbol");
-        }
+    public void OpenDocument()
+    {
+        documentPanel.SetActive(true);
+        passportText.text = $"Name: {currentName}\nAge: {currentAge}\nOrigin: {currentOrigin}";
+        regionSymbol.sprite = currentRegionSymbol;
+
+        EnableDecisionButtons(false); // Disable buttons while viewing document
+    }
+
+    public void CloseDocument()
+    {
+        documentPanel.SetActive(false);
+        EnableDecisionButtons(true); // Re-enable buttons
+    }
+
+    private void EnableDecisionButtons(bool enable)
+    {
+        if (approveButton != null) approveButton.interactable = enable;
+        if (denyButton != null) denyButton.interactable = enable;
     }
 }

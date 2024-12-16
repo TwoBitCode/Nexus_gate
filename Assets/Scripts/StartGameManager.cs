@@ -1,49 +1,56 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections;
 
 public class StartGameManager : MonoBehaviour
 {
     [Header("UI Elements")]
     public Button startButton;
     public GameObject rulesPanel;
-    public GameObject gameUI;
+    public GameObject applicantPanel;
+    public GameObject documentPanel;
+
+    [Header("Game Managers")]
+    public PassportManager passportManager;
 
     private void Start()
     {
+        rulesPanel.SetActive(true);
+        applicantPanel.SetActive(false);
+        documentPanel.SetActive(false);
+
         if (startButton != null)
         {
-            startButton.onClick.AddListener(StartGame);
+            startButton.onClick.AddListener(() => StartCoroutine(StartGameRoutine()));
         }
         else
         {
-            Debug.LogError("Start button reference is missing in the inspector!");
+            Debug.LogError("Start button not assigned!");
         }
     }
 
-    private void StartGame()
+    private IEnumerator StartGameRoutine()
     {
-        Debug.Log("StartGame function called!");
+        Debug.Log("Start button clicked!");
 
-        // Close the rules panel if active
-        if (rulesPanel != null && rulesPanel.activeSelf)
+        // Trigger resource loading explicitly
+        passportManager.LoadResources();
+
+        // Wait until resources are loaded
+        while (!passportManager.IsResourcesLoaded())
         {
-            rulesPanel.SetActive(false);
-            Debug.Log("Rules panel closed.");
-        }
-        else
-        {
-            Debug.LogWarning("Rules panel was already closed or missing.");
+            Debug.Log("Waiting for resources to load...");
+            yield return null; // Wait one frame
         }
 
-        // Enable the game UI
-        if (gameUI != null)
-        {
-            gameUI.SetActive(true);
-            Debug.Log("Game UI enabled.");
-        }
-        else
-        {
-            Debug.LogWarning("Game UI reference is missing!");
-        }
+        Debug.Log("Resources loaded. Starting game...");
+
+        // Hide the Rules Panel and show Applicant Panel
+        rulesPanel.SetActive(false);
+        applicantPanel.SetActive(true);
+
+        passportManager.GeneratePassport();
+        Debug.Log("Game Started: Passport generated successfully.");
     }
+
 }

@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 public class DecisionManager : MonoBehaviour
 {
@@ -12,10 +11,10 @@ public class DecisionManager : MonoBehaviour
     [Header("Reputation Settings")]
     [SerializeField] private int maxReputation = 100;
     [SerializeField] private int reputationPenalty = 10;
-    //[SerializeField] private int dangerousEntryPenalty = 100;
 
     private int currentReputation;
     private bool isGameOver = false;
+
 
     private void Start()
     {
@@ -121,7 +120,9 @@ public class DecisionManager : MonoBehaviour
     private bool IsValidApplicant(string origin, int age)
     {
         string[] validOrigins = { "Zarquinia", "Nebulon IV", "Andromeda Prime", "Galva-Theta", "Xyron-9" };
-        return System.Array.Exists(validOrigins, o => o == origin) && age >= passportManager.minAlienAge && age <= passportManager.maxAlienAge;
+        return System.Array.Exists(validOrigins, o => o == origin)
+            && age >= passportManager.MinAlienAge
+            && age <= passportManager.MaxAlienAge;
     }
 
     private bool IsDangerousApplicant(string origin)
