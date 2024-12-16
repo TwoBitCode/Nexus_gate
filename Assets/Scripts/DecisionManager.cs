@@ -12,7 +12,7 @@ public class DecisionManager : MonoBehaviour
     [Header("Reputation Settings")]
     [SerializeField] private int maxReputation = 100;
     [SerializeField] private int reputationPenalty = 10;
-    [SerializeField] private int dangerousEntryPenalty = 100;
+    //[SerializeField] private int dangerousEntryPenalty = 100;
 
     private int currentReputation;
     private bool isGameOver = false;
