@@ -4,9 +4,9 @@ using UnityEngine.UI;
 public class StartGameManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    public Button startButton;  
-    public GameObject rulesPanel;  
-    public GameObject gameUI;  
+    public Button startButton;
+    public GameObject rulesPanel;
+    public GameObject gameUI;
 
     private void Start()
     {

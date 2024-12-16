@@ -909,7 +909,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startButton: {fileID: 663187786}
-  rulesPanel: {fileID: 0}
+  rulesPanel: {fileID: 1386173571}
+  gameUI: {fileID: 597975463}
 --- !u!114 &663187786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1563,7 +1564,7 @@ GameObject:
   - component: {fileID: 1386173574}
   - component: {fileID: 1386173573}
   m_Layer: 5
-  m_Name: Panel
+  m_Name: RulesPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
