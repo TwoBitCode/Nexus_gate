@@ -11,7 +11,7 @@ public class PassportManager : MonoBehaviour
     private Sprite[] fakeSymbols; // Fake region symbols
 
     private string[] alienNames = { "Zarqa Elion", "Nebulo Xel", "Quorin Arak", "Vetra Shiran", "Xilra Talos" };
-    private string[] alienOrigins = {"Andromeda Prime", "Galva-Theta", "Nebulon IV", "Xyron-9", "Zarquinia" };
+    private string[] alienOrigins = { "Andromeda Prime", "Galva-Theta", "Nebulon IV", "Xyron-9", "Zarquinia" };
     private Sprite[] alienSymbols; // Symbols for the alien origins
 
     private string[] fakeNames = { "Zevon-X", "Aria-12", "Rho Delta", "Liran-77", "Korin Prime" };
