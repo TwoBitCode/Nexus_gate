@@ -985,17 +985,17 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 924411693}
-  - {fileID: 1386173572}
-  - {fileID: 2078250864}
-  - {fileID: 97587620}
+  - {fileID: 99759271}
   - {fileID: 1337383433}
-  - {fileID: 1276971918}
   - {fileID: 2115154605}
   - {fileID: 891833421}
   - {fileID: 21030949}
-  - {fileID: 99759271}
-  - {fileID: 528945967}
   - {fileID: 1238372270}
+  - {fileID: 1386173572}
+  - {fileID: 2078250864}
+  - {fileID: 97587620}
+  - {fileID: 1276971918}
+  - {fileID: 528945967}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -1749,7 +1749,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 924411692}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -1758,7 +1758,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0.000012875, y: 4.5191}
+  m_AnchoredPosition: {x: 0.00002670288, y: 4.5191}
   m_SizeDelta: {x: 919.52, y: 606.59}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &924411694
@@ -2514,7 +2514,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1386173571}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -2525,8 +2525,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -3.5481567, y: 10.2247925}
-  m_SizeDelta: {x: -7.0964, y: -51.0714}
+  m_AnchoredPosition: {x: -9.8667, y: -26.631}
+  m_SizeDelta: {x: 114.3274, y: 53.2614}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1386173574
 MonoBehaviour:
