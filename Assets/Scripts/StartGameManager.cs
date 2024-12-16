@@ -1,23 +1,49 @@
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class StartGameManager : MonoBehaviour
 {
-    public Button startButton; // Reference to the Start Button
+    [Header("UI Elements")]
+    public Button startButton;  
+    public GameObject rulesPanel;  
+    public GameObject gameUI;  
 
-    void Start()
+    private void Start()
     {
-        // Attach a listener to the button
-        startButton.onClick.AddListener(StartGame);
+        if (startButton != null)
+        {
+            startButton.onClick.AddListener(StartGame);
+        }
+        else
+        {
+            Debug.LogError("Start button reference is missing in the inspector!");
+        }
     }
 
-    void StartGame()
+    private void StartGame()
     {
-        // Load the main game scene or activate the game
-        Debug.Log("Game Started!");
+        Debug.Log("StartGame function called!");
 
-        // If you want to close the rules panel:
-        gameObject.SetActive(false);
+        // Close the rules panel if active
+        if (rulesPanel != null && rulesPanel.activeSelf)
+        {
+            rulesPanel.SetActive(false);
+            Debug.Log("Rules panel closed.");
+        }
+        else
+        {
+            Debug.LogWarning("Rules panel was already closed or missing.");
+        }
+
+        // Enable the game UI
+        if (gameUI != null)
+        {
+            gameUI.SetActive(true);
+            Debug.Log("Game UI enabled.");
+        }
+        else
+        {
+            Debug.LogWarning("Game UI reference is missing!");
+        }
     }
 }

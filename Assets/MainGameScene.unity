@@ -485,14 +485,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passportManager: {fileID: 97587624}
   resultText: {fileID: 2115154606}
-  endGameText: {fileID: 1337383434}
   gameOverPanel: {fileID: 1276971917}
-  startingReputation: 50
-  reputationGain: 10
-  reputationLoss: 5
-  unknownOriginPenalty: 10
-  maxApplicants: 10
-  nextApplicantDelay: 1.5
+  maxReputation: 100
+  reputationPenalty: 10
+  dangerousEntryPenalty: 100
 --- !u!114 &97587624
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -507,8 +503,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   passportText: {fileID: 56023079}
   applicantImage: {fileID: 1747065411}
-  minHumanAge: 18
-  maxHumanAge: 65
   minAlienAge: 25
   maxAlienAge: 120
   minFakeAge: 5
@@ -915,6 +909,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startButton: {fileID: 663187786}
+  rulesPanel: {fileID: 0}
 --- !u!114 &663187786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1608,7 +1603,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rulesPanel: {fileID: 1386173571}
-  startButton: {fileID: 663187786}
 --- !u!114 &1386173574
 MonoBehaviour:
   m_ObjectHideFlags: 0

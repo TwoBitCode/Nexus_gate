@@ -1,23 +1,33 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class RulesPanelManager : MonoBehaviour
 {
-    public GameObject rulesPanel; // Reference to the Rules Panel
-    public Button startButton; // Reference to the Start Button
+    [Header("UI Elements")]
+    public GameObject rulesPanel; // Reference to the rules panel
 
-    void Start()
+    public void OpenRulesPanel()
     {
-        // Ensure the panel is active when the game starts
-        rulesPanel.SetActive(true);
-
-        // Attach a listener to the button
-        startButton.onClick.AddListener(CloseRulesPanel);
+        if (rulesPanel != null)
+        {
+            rulesPanel.SetActive(true);
+            Debug.Log("Rules panel opened.");
+        }
+        else
+        {
+            Debug.LogError("Rules panel reference is missing in the inspector!");
+        }
     }
 
-    void CloseRulesPanel()
+    public void CloseRulesPanel()
     {
-        // Hide the rules panel
-        rulesPanel.SetActive(false);
+        if (rulesPanel != null)
+        {
+            rulesPanel.SetActive(false);
+            Debug.Log("Rules panel closed.");
+        }
+        else
+        {
+            Debug.LogError("Rules panel reference is missing in the inspector!");
+        }
     }
 }
