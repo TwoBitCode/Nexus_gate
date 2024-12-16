@@ -8,6 +8,7 @@ public class PassportManager : MonoBehaviour
     public TextMeshProUGUI passportText; // Displays applicant's passport details
     public Image applicantImage; // Displays applicant's face
     public Image regionSymbol; // Displays the symbol for the applicant's origin
+    private Sprite[] fakeSymbols; // Fake region symbols
 
     private string[] alienNames = { "Zarqa Elion", "Nebulo Xel", "Quorin Arak", "Vetra Shiran", "Xilra Talos" };
     private string[] alienOrigins = {"Andromeda Prime", "Galva-Theta", "Nebulon IV", "Xyron-9", "Zarquinia" };
@@ -30,6 +31,12 @@ public class PassportManager : MonoBehaviour
         alienImages = LoadImagesFromResources("Images/Aliens");
         alienSymbols = LoadImagesFromResources("Images/RegionSymbols");
         Debug.Log($"Loaded {alienImages?.Length ?? 0} alien images and {alienSymbols?.Length ?? 0} region symbols.");
+        fakeSymbols = LoadImagesFromResources("Images/FakeRegionSymbols");
+
+        if (fakeSymbols.Length != fakeOrigins.Length)
+        {
+            Debug.LogError("Fake symbols count does not match fake origins count!");
+        }
 
         // Verify loaded images
         if (alienImages.Length == 0 || alienSymbols.Length == 0)
@@ -88,6 +95,9 @@ public class PassportManager : MonoBehaviour
             name = fakeNames[fakeIndex % fakeNames.Length];
             origin = fakeOrigins[fakeIndex];
 
+            // Assign the fake symbol
+            symbolImage = fakeSymbols[fakeIndex];
+
             // Use random alien images for fake applicants
             if (alienImages != null && alienImages.Length > 0)
             {
@@ -99,7 +109,6 @@ public class PassportManager : MonoBehaviour
                 faceImage = Resources.Load<Sprite>("Images/DefaultImage");
             }
 
-            symbolImage = Resources.Load<Sprite>("Images/FakeRegionSymbol");
             age = Random.Range(minFakeAge, maxFakeAge);
         }
 
