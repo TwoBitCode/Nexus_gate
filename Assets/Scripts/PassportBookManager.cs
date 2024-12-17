@@ -17,11 +17,22 @@ public class PassportBookManager : MonoBehaviour
 
     private void Start()
     {
+        if (regionNames.Length != regionSymbols.Length)
+        {
+            Debug.LogError("Passport data mismatch: regionNames and regionSymbols arrays must have the same length.");
+            return;
+        }
         UpdatePage();
     }
 
     public void OpenBook()
     {
+        if (regionNames.Length == 0 || regionSymbols.Length == 0)
+        {
+            Debug.LogError("Passport book data is empty. Check the inspector.");
+            return;
+        }
+
         bookPanel.SetActive(true);
         currentPage = 0;
         UpdatePage();
@@ -52,7 +63,7 @@ public class PassportBookManager : MonoBehaviour
 
     private void UpdatePage()
     {
-        if (regionNames.Length > currentPage && regionSymbols.Length > currentPage)
+        if (currentPage >= 0 && currentPage < regionNames.Length && currentPage < regionSymbols.Length)
         {
             regionName.text = regionNames[currentPage];
             regionSymbol.sprite = regionSymbols[currentPage];

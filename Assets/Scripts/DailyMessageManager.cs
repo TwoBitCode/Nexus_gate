@@ -4,11 +4,12 @@ using System.Collections;
 
 public class DailyMessageManager : MonoBehaviour
 {
-    public TextMeshProUGUI officerDialogue; // Dialogue box
-    public string[] messages;              // Array of messages
-    public float typingSpeed = 0.05f;      // Speed of typing effect
+    public TextMeshProUGUI officerDialogue;  // Dialogue box
+    public string[] messages;                // Array of messages
+    public float typingSpeed = 0.05f;        // Speed of typing effect
+    public float messageWaitTime = 2f;       // Wait time between messages
 
-    public AudioSource officerSound;       // Audio source for typing sound
+    public AudioSource officerSound;         // Audio source for typing sound
 
     void Start()
     {
@@ -29,7 +30,7 @@ public class DailyMessageManager : MonoBehaviour
             }
 
             officerSound.Stop();          // Stop the sound after line finishes
-            yield return new WaitForSeconds(2f); // Wait before next message
+            yield return new WaitForSeconds(messageWaitTime); // Wait before next message
         }
     }
 }

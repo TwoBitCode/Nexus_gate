@@ -1,24 +1,33 @@
 using UnityEngine;
-using TMPro; // For TextMeshPro
+using TMPro;
 using System.Collections;
-using UnityEngine.SceneManagement; // For scene loading
+using UnityEngine.SceneManagement;
 
 public class TypingEffect : MonoBehaviour
 {
-    public TextMeshProUGUI textComponent; // TextMeshProUGUI component
-    public string[] lines; // Array of text lines
-    public float typingSpeed = 0.05f; // Delay between letters
-    public AudioSource typingSound; // AudioSource for typing sound
-    public AudioClip typingClip; // Assign typing sound here
+    [Header("UI Elements")]
+    public TextMeshProUGUI textComponent; // Text display
 
-    private int lettersPerSound = 20; // Play sound every X letters
+    [Header("Typing Settings")]
+    [SerializeField] private string[] lines;  // Array of text lines
+    [SerializeField] private float typingSpeed = 0.05f; // Delay between letters
+    [SerializeField] private float lineWaitTime = 1f; // Delay between lines
+    [SerializeField] private int lettersPerSound = 20; // Sound trigger frequency
 
-    void Start()
+    [Header("Audio")]
+    public AudioSource typingSound; // Typing sound source
+    public AudioClip typingClip;    // Typing sound clip
+
+    [Header("Scene Management")]
+    [SerializeField] private string nextSceneName = "DailyMessageScene"; // Next scene
+
+    private void Start()
     {
+        if (!ValidateComponents()) return;
         StartCoroutine(TypeLine());
     }
 
-    IEnumerator TypeLine()
+    private IEnumerator TypeLine()
     {
         foreach (string line in lines)
         {
@@ -30,26 +39,23 @@ public class TypingEffect : MonoBehaviour
                 textComponent.text += letter; // Add letter to text
                 letterCount++;
 
-                // Trigger the typing sound on the first letter and every few letters
+                // Play typing sound at the start and every few letters
                 if (letterCount % lettersPerSound == 0 || letterCount == 1)
                 {
                     PlayTypingSound();
                 }
 
-                yield return new WaitForSecondsRealtime(typingSpeed); // Wait before next letter
+                yield return new WaitForSecondsRealtime(typingSpeed);
             }
 
-            // Stop sound at the end of the line
             StopTypingSound();
-
-            // Wait before showing the next line
-            yield return new WaitForSecondsRealtime(1f);
+            yield return new WaitForSecondsRealtime(lineWaitTime);
         }
 
-        OnComplete(); // Load next scene after all lines
+        OnComplete();
     }
 
-    void PlayTypingSound()
+    private void PlayTypingSound()
     {
         if (typingSound != null && typingClip != null)
         {
@@ -57,7 +63,7 @@ public class TypingEffect : MonoBehaviour
         }
     }
 
-    void StopTypingSound()
+    private void StopTypingSound()
     {
         if (typingSound != null)
         {
@@ -65,11 +71,33 @@ public class TypingEffect : MonoBehaviour
         }
     }
 
-    void OnComplete()
+    private void OnComplete()
     {
         Debug.Log("Typing Effect Complete!");
 
-        // Load the Main Game Scene
-        SceneManager.LoadScene("DailyMessageScene");
+        if (!string.IsNullOrEmpty(nextSceneName))
+        {
+            SceneManager.LoadScene(nextSceneName);
+        }
+        else
+        {
+            Debug.LogError("Next scene name is not set!");
+        }
+    }
+
+    private bool ValidateComponents()
+    {
+        if (textComponent == null || lines == null || lines.Length == 0)
+        {
+            Debug.LogError("Text Component or Lines not assigned!");
+            return false;
+        }
+
+        if (typingSound == null)
+        {
+            Debug.LogWarning("Typing sound source is missing.");
+        }
+
+        return true;
     }
 }

@@ -15,6 +15,8 @@ public class StartGameManager : MonoBehaviour
 
     private void Start()
     {
+        if (!ValidateUIElements()) return;
+
         rulesPanel.SetActive(true);
         applicantPanel.SetActive(false);
         documentPanel.SetActive(false);
@@ -33,19 +35,22 @@ public class StartGameManager : MonoBehaviour
     {
         Debug.Log("Start button clicked!");
 
-        // Trigger resource loading explicitly
+        if (passportManager == null)
+        {
+            Debug.LogError("PassportManager reference is missing!");
+            yield break;
+        }
+
         passportManager.LoadResources();
 
-        // Wait until resources are loaded
         while (!passportManager.IsResourcesLoaded())
         {
             Debug.Log("Waiting for resources to load...");
-            yield return null; // Wait one frame
+            yield return null; // Wait for one frame
         }
 
         Debug.Log("Resources loaded. Starting game...");
 
-        // Hide the Rules Panel and show Applicant Panel
         rulesPanel.SetActive(false);
         applicantPanel.SetActive(true);
 
@@ -53,4 +58,20 @@ public class StartGameManager : MonoBehaviour
         Debug.Log("Game Started: Passport generated successfully.");
     }
 
+    private bool ValidateUIElements()
+    {
+        if (rulesPanel == null || applicantPanel == null || documentPanel == null)
+        {
+            Debug.LogError("One or more UI elements are not assigned in the inspector!");
+            return false;
+        }
+
+        if (passportManager == null)
+        {
+            Debug.LogError("PassportManager is not assigned!");
+            return false;
+        }
+
+        return true;
+    }
 }

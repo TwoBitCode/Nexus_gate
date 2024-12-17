@@ -12,9 +12,15 @@ public class DecisionManager : MonoBehaviour
     [SerializeField] private int maxReputation = 100;
     [SerializeField] private int reputationPenalty = 10;
 
+    [Header("Decision Settings")]
+    [SerializeField] private float nextApplicantDelay = 2.0f; // Delay before showing next applicant
+
+    [Header("Applicant Settings")]
+    [SerializeField] private string[] validOrigins = { "Zarquinia", "Nebulon IV", "Andromeda Prime", "Galva-Theta", "Xyron-9" };
+    [SerializeField] private string[] dangerousOrigins = { "Phantom Ring", "Oblivion Expanse" };
+
     private int currentReputation;
     private bool isGameOver = false;
-
 
     private void Start()
     {
@@ -38,7 +44,9 @@ public class DecisionManager : MonoBehaviour
     {
         string[] passportData = passportManager.passportText.text.Split('\n');
         string origin = SafeExtractField(passportData, 2, "Origin");
-        int age = int.Parse(SafeExtractField(passportData, 1, "Age"));
+        int age = SafeParseAge(SafeExtractField(passportData, 1, "Age"));
+
+        if (age < 0) return; // Invalid age, log handled in SafeParseAge()
 
         bool isValid = IsValidApplicant(origin, age);
         bool isDangerous = IsDangerousApplicant(origin);
@@ -73,7 +81,7 @@ public class DecisionManager : MonoBehaviour
             }
         }
 
-        Invoke(nameof(GenerateNextApplicant), 2.0f);
+        Invoke(nameof(GenerateNextApplicant), nextApplicantDelay);
     }
 
     private void AdjustReputation(int amount)
@@ -114,12 +122,25 @@ public class DecisionManager : MonoBehaviour
     private string SafeExtractField(string[] lines, int index, string fieldName)
     {
         try { return lines[index].Split(':')[1].Trim(); }
-        catch { Debug.LogError($"Failed to extract '{fieldName}' from passport."); return string.Empty; }
+        catch
+        {
+            Debug.LogError($"Failed to extract '{fieldName}' from passport.");
+            return string.Empty;
+        }
+    }
+
+    private int SafeParseAge(string ageString)
+    {
+        if (int.TryParse(ageString, out int age))
+        {
+            return age;
+        }
+        Debug.LogError($"Failed to parse 'Age': {ageString}. Ensure the passport data format is correct.");
+        return -1; // Return an invalid age indicator
     }
 
     private bool IsValidApplicant(string origin, int age)
     {
-        string[] validOrigins = { "Zarquinia", "Nebulon IV", "Andromeda Prime", "Galva-Theta", "Xyron-9" };
         return System.Array.Exists(validOrigins, o => o == origin)
             && age >= passportManager.MinAlienAge
             && age <= passportManager.MaxAlienAge;
@@ -127,7 +148,6 @@ public class DecisionManager : MonoBehaviour
 
     private bool IsDangerousApplicant(string origin)
     {
-        string[] dangerousOrigins = { "Phantom Ring", "Oblivion Expanse" };
         return System.Array.Exists(dangerousOrigins, o => o == origin);
     }
 }
