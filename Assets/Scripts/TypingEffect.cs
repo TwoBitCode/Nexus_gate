@@ -70,6 +70,6 @@ public class TypingEffect : MonoBehaviour
         Debug.Log("Typing Effect Complete!");
 
         // Load the Main Game Scene
-        SceneManager.LoadScene("MainGameScene");
+        SceneManager.LoadScene("DailyMessageScene");
     }
 }
