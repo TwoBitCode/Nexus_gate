@@ -15,12 +15,15 @@ public class StartGameManager : MonoBehaviour
 
     private void Start()
     {
+        // Validate UI elements and ensure PassportManager reference exists
         if (!ValidateUIElements()) return;
 
+        // Initial state: Show rules, hide applicant and document panels
         rulesPanel.SetActive(true);
         applicantPanel.SetActive(false);
         documentPanel.SetActive(false);
 
+        // Attach the Start button listener
         if (startButton != null)
         {
             startButton.onClick.AddListener(() => StartCoroutine(StartGameRoutine()));
@@ -35,43 +38,63 @@ public class StartGameManager : MonoBehaviour
     {
         Debug.Log("Start button clicked!");
 
+        // Check if PassportManager exists
         if (passportManager == null)
         {
             Debug.LogError("PassportManager reference is missing!");
             yield break;
         }
 
+        // Load PassportManager resources
         passportManager.LoadResources();
+        Debug.Log("Loading resources...");
 
-        while (!passportManager.IsResourcesLoaded())
+        // Wait for resources to load if a check is needed
+        while (!passportManager.AreResourcesLoaded())
         {
             Debug.Log("Waiting for resources to load...");
-            yield return null; // Wait for one frame
+            yield return null; // Wait for the next frame
         }
 
         Debug.Log("Resources loaded. Starting game...");
 
+        // Update UI state: Hide rules, show applicant panel
         rulesPanel.SetActive(false);
         applicantPanel.SetActive(true);
 
+        // Generate the first passport
         passportManager.GeneratePassport();
         Debug.Log("Game Started: Passport generated successfully.");
     }
 
     private bool ValidateUIElements()
     {
-        if (rulesPanel == null || applicantPanel == null || documentPanel == null)
+        bool isValid = true;
+
+        if (rulesPanel == null)
         {
-            Debug.LogError("One or more UI elements are not assigned in the inspector!");
-            return false;
+            Debug.LogError("Rules panel is not assigned!");
+            isValid = false;
+        }
+
+        if (applicantPanel == null)
+        {
+            Debug.LogError("Applicant panel is not assigned!");
+            isValid = false;
+        }
+
+        if (documentPanel == null)
+        {
+            Debug.LogError("Document panel is not assigned!");
+            isValid = false;
         }
 
         if (passportManager == null)
         {
             Debug.LogError("PassportManager is not assigned!");
-            return false;
+            isValid = false;
         }
 
-        return true;
+        return isValid;
     }
 }

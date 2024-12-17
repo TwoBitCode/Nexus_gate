@@ -21,6 +21,7 @@ public class DecisionManager : MonoBehaviour
 
     private int currentReputation;
     private bool isGameOver = false;
+    private int currentYear = 4065; // Current game year
 
     private void Start()
     {
@@ -43,13 +44,16 @@ public class DecisionManager : MonoBehaviour
     private void EvaluateDecision(bool isApproved)
     {
         string[] passportData = passportManager.passportText.text.Split('\n');
+
         string origin = SafeExtractField(passportData, 2, "Origin");
-        int age = SafeParseAge(SafeExtractField(passportData, 1, "Age"));
+        int birthYear = SafeParseYear(SafeExtractField(passportData, 1, "Date of Birth"));
+        int expirationYear = SafeParseYear(SafeExtractField(passportData, 3, "Expiration Year"));
 
-        if (age < 0) return; // Invalid age, log handled in SafeParseAge()
+        if (birthYear < 0 || expirationYear < 0) return; // Invalid data check
 
-        bool isValid = IsValidApplicant(origin, age);
-        bool isDangerous = IsDangerousApplicant(origin);
+        bool isExpired = expirationYear < currentYear;
+        bool isFakeOrigin = !System.Array.Exists(validOrigins, o => o == origin);
+        bool isDangerous = System.Array.Exists(dangerousOrigins, o => o == origin);
 
         if (isApproved)
         {
@@ -58,9 +62,10 @@ public class DecisionManager : MonoBehaviour
                 GameOver($"You approved a dangerous applicant from {origin}. They pose a threat to the station!");
                 return;
             }
-            else if (!isValid)
+            else if (isExpired || isFakeOrigin)
             {
-                GameOver($"You approved an invalid applicant! Origin: {origin}, Age: {age}. Check the rules carefully next time.");
+                string reason = isExpired ? "expired passport" : "fake origin";
+                GameOver($"You approved an invalid applicant! Reason: {reason}. Check the passport carefully next time.");
                 return;
             }
             else
@@ -70,10 +75,10 @@ public class DecisionManager : MonoBehaviour
         }
         else // Denied
         {
-            if (isValid)
+            if (!isExpired && !isFakeOrigin && !isDangerous)
             {
                 AdjustReputation(-reputationPenalty);
-                resultText.text = $"Wrong Decision! Authorized applicant from {origin} denied. Reputation decreased.";
+                resultText.text = $"Wrong Decision! Valid applicant from {origin} denied. Reputation decreased.";
             }
             else
             {
@@ -129,25 +134,13 @@ public class DecisionManager : MonoBehaviour
         }
     }
 
-    private int SafeParseAge(string ageString)
+    private int SafeParseYear(string yearString)
     {
-        if (int.TryParse(ageString, out int age))
+        if (int.TryParse(yearString, out int year))
         {
-            return age;
+            return year;
         }
-        Debug.LogError($"Failed to parse 'Age': {ageString}. Ensure the passport data format is correct.");
-        return -1; // Return an invalid age indicator
-    }
-
-    private bool IsValidApplicant(string origin, int age)
-    {
-        return System.Array.Exists(validOrigins, o => o == origin)
-            && age >= passportManager.MinAlienAge
-            && age <= passportManager.MaxAlienAge;
-    }
-
-    private bool IsDangerousApplicant(string origin)
-    {
-        return System.Array.Exists(dangerousOrigins, o => o == origin);
+        Debug.LogError($"Failed to parse year: {yearString}. Ensure the passport data format is correct.");
+        return -1; // Invalid year
     }
 }
