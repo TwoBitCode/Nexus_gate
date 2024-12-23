@@ -2,41 +2,42 @@ using UnityEngine;
 
 public class UIManager : MonoBehaviour
 {
+    // References to UI Canvas Groups
     public CanvasGroup dailyMessageGroup;  // Canvas Group for Daily Message UI
     public CanvasGroup tutorialGroup;     // Canvas Group for Tutorial UI
 
-    public void ShowDailyMessage()
+    // Shows a CanvasGroup by enabling its properties
+    public void ShowUI(CanvasGroup group)
     {
-        dailyMessageGroup.alpha = 1;
-        dailyMessageGroup.interactable = true;
-        dailyMessageGroup.blocksRaycasts = true;
+        if (group == null)
+        {
+            Debug.LogError("CanvasGroup is null. Ensure all CanvasGroups are assigned in the inspector.");
+            return;
+        }
+
+        group.alpha = 1;
+        group.interactable = true;
+        group.blocksRaycasts = true;
     }
 
-    public void HideDailyMessage()
+    // Hides a CanvasGroup by disabling its properties
+    public void HideUI(CanvasGroup group)
     {
-        dailyMessageGroup.alpha = 0;
-        dailyMessageGroup.interactable = false;
-        dailyMessageGroup.blocksRaycasts = false;
+        if (group == null)
+        {
+            Debug.LogError("CanvasGroup is null. Ensure all CanvasGroups are assigned in the inspector.");
+            return;
+        }
+
+        group.alpha = 0;
+        group.interactable = false;
+        group.blocksRaycasts = false;
     }
 
-    public void ShowTutorial()
-    {
-        tutorialGroup.alpha = 1;
-        tutorialGroup.interactable = true;
-        tutorialGroup.blocksRaycasts = true;
-    }
-
-    public void HideTutorial()
-    {
-        tutorialGroup.alpha = 0;
-        tutorialGroup.interactable = false;
-        tutorialGroup.blocksRaycasts = false;
-    }
-
+    // Transitions from the Daily Message UI to the Tutorial UI
     public void TransitionToTutorial()
     {
-        // Example transition
-        HideDailyMessage();
-        ShowTutorial();
+        HideUI(dailyMessageGroup);
+        ShowUI(tutorialGroup);
     }
 }
