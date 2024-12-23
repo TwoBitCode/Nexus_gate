@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class TutorialManager : MonoBehaviour
@@ -9,8 +10,8 @@ public class TutorialManager : MonoBehaviour
     public GameObject denyButton;           // Deny button
     public GameObject passportBookButton;   // Passport Book button
     public GameObject passportIcon;         // Passport Icon
-
     public TextMeshProUGUI tooltip;         // Tooltip text
+    public GameObject startGameButton;      // Start Game button
 
     [Header("Highlight Effects")]
     public GameObject approveHighlight;     // Highlight for approve button
@@ -24,6 +25,12 @@ public class TutorialManager : MonoBehaviour
 
     void Start()
     {
+        // Ensure the Start Game button is hidden at the beginning
+        if (startGameButton != null)
+        {
+            startGameButton.SetActive(false);
+        }
+
         StartCoroutine(RunTutorial());
     }
 
@@ -57,6 +64,12 @@ public class TutorialManager : MonoBehaviour
         tooltip.text = "You're ready! Start processing travelers now.";
         yield return new WaitForSeconds(MessageDisplayTime);
 
+        // Show the Start Game button
+        if (startGameButton != null)
+        {
+            startGameButton.SetActive(true);
+        }
+
         Debug.Log("Tutorial completed.");
     }
 
@@ -84,5 +97,11 @@ public class TutorialManager : MonoBehaviour
 
         // Disable the highlight effect
         highlight.SetActive(false);
+    }
+
+    // Function called when the Start Game button is clicked
+    public void StartGame()
+    {
+        SceneManager.LoadScene("MainGameScene"); // Replace "MainScene" with the actual name of your main scene
     }
 }
