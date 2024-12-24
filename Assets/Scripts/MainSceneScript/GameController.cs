@@ -2,47 +2,63 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 
-
 public class GameController : MonoBehaviour
 {
     [Header("UI References")]
-    public GameObject gameOverPanel;      // Reference to the GameOverPanel
-    public TextMeshProUGUI gameOverText;  // Reference to the text in the GameOverPanel
+    public GameObject gameOverPanel;       // Reference to the GameOverPanel
+    public TextMeshProUGUI gameOverText;   // Reference to the text in the GameOverPanel
+
+    [Header("Managers")]
+    public DayManager dayManager;         // Reference to the DayManager
+    public UIManagerMainScene uiManager;  // Reference to the centralized UIManager
 
     public void ShowEndOfDayMessage(bool isGameOver)
     {
-        if (gameOverPanel == null || gameOverText == null)
+        if (uiManager == null)
         {
-            Debug.LogError("GameOverPanel or GameOverText is not assigned in the GameController!");
+            Debug.LogError("UIManager is not assigned in GameController!");
             return;
         }
 
         // Set the appropriate message
-        if (isGameOver)
+        string message = isGameOver
+            ? "Game Over!\nYou have lost all your reputation."
+            : "Day Complete!\nGet ready for the next level.";
+
+        // Use UIManager to update the UI
+        uiManager.UpdateText(gameOverText, message);
+        uiManager.ShowPanel(gameOverPanel);
+
+        // Disable all buttons
+        uiManager.DisableAllButtons();
+
+        if (!isGameOver)
         {
-            gameOverText.text = "Game Over!\nYou have lost all your reputation.";
+            Debug.Log("Day Complete: Prepare for the next day.");
         }
         else
         {
-            gameOverText.text = "Day Complete!\nGet ready for the next level.";
+            Debug.Log("Game Over: Ending game session.");
         }
-
-        // Disable all buttons
-        DisableAllButtons();
-
-        // Show the GameOverPanel
-        gameOverPanel.SetActive(true);
     }
 
-    private void DisableAllButtons()
+    public void ProceedToNextDay()
     {
-        Button[] allButtons = Object.FindObjectsByType<Button>(FindObjectsSortMode.None); // Updated to use FindObjectsByType
-        foreach (Button button in allButtons)
+        if (dayManager == null)
         {
-            button.interactable = false; // Disable each button
+            Debug.LogError("DayManager is not assigned in GameController!");
+            return;
         }
 
-        Debug.Log("All buttons have been disabled.");
+        // Check if there are more days
+        if (dayManager.HasNextDay())
+        {
+            dayManager.AdvanceToNextDay();
+            Debug.Log($"Proceeding to Day {dayManager.currentDay}");
+        }
+        else
+        {
+            ShowEndOfDayMessage(true); // End the game if no more days
+        }
     }
 }
-
