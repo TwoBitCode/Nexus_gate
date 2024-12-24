@@ -12,16 +12,19 @@ public class StartGameManager : MonoBehaviour
     public GameObject applicantPanel;
     public GameObject documentPanel;
     public Slider reputationBar;
-    public int maxReputation = 100;
+    [SerializeField] private int maxReputation = 100; // Maximum reputation value, customizable in the Inspector
     public AudioSource audioSource; // Reference to the AudioSource in the scene
 
     [Header("Game Managers")]
     public ApplicantManager applicantManager; // Reference to the ApplicantManager
     public DayManager dayManager; // Reference to the DayManager
     private UIManagerMainScene uiManager; // Reference to the centralized UIManager
-    private int currentReputation;
+
+    private int currentReputation; // Current reputation tracker
+
     private void Start()
     {
+        // Get UIManager component and validate manager assignments
         uiManager = GetComponent<UIManagerMainScene>();
         if (dayManager == null || uiManager == null || applicantManager == null)
         {
@@ -29,9 +32,11 @@ public class StartGameManager : MonoBehaviour
             return;
         }
 
-        currentReputation = maxReputation; // Initialize reputation
-        uiManager.UpdateReputationBar(reputationBar, currentReputation, maxReputation); // Update UI
+        // Initialize reputation and update the UI
+        currentReputation = maxReputation;
+        uiManager.UpdateReputationBar(reputationBar, currentReputation, maxReputation);
 
+        // Initialize the day and set up UI elements
         InitializeDay();
     }
 
@@ -46,7 +51,7 @@ public class StartGameManager : MonoBehaviour
         // Initialize the current day
         dayManager.InitializeDay();
 
-        // Set up the UI for the current day
+        // Get the current day's data and set up the UI accordingly
         DayData currentDayData = dayManager.GetCurrentDayData();
         if (currentDayData == null) return;
 
@@ -62,6 +67,7 @@ public class StartGameManager : MonoBehaviour
             reputationBar.value = maxReputation;
         }
 
+        // Set up the start button
         if (startButton != null)
         {
             startButton.onClick.RemoveAllListeners();
@@ -88,8 +94,10 @@ public class StartGameManager : MonoBehaviour
         // Log the maxApplicantsPerDay for verification
         Debug.Log($"DayData maxApplicantsPerDay: {currentDayData.maxApplicantsPerDay}");
 
+        // Set up applicants for the day
         applicantManager.SetDayData(currentDayData);
 
+        // Generate and validate the first applicant
         if (!applicantManager.GenerateNextApplicant())
         {
             Debug.LogError("Failed to generate the first applicant.");
@@ -103,6 +111,7 @@ public class StartGameManager : MonoBehaviour
             yield break;
         }
 
+        // Update the UI for the game start
         uiManager.HidePanel(rulesPanel);
         uiManager.ShowPanel(applicantPanel);
         applicantPanelManager.UpdateApplicantUI(firstApplicant);
@@ -110,8 +119,6 @@ public class StartGameManager : MonoBehaviour
         Debug.Log("Game started successfully.");
         yield break;
     }
-
-
 
     public void PlayDailyMusic(DayData dayData)
     {
@@ -121,8 +128,9 @@ public class StartGameManager : MonoBehaviour
             return;
         }
 
+        // Play the daily music with looping enabled
         audioSource.clip = dayData.dailyMusic;
-        audioSource.loop = true; // Ensure the music loops
+        audioSource.loop = true;
         audioSource.Play();
     }
 }

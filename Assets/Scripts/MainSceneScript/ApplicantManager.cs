@@ -1,16 +1,29 @@
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Rendering;
 using UnityEngine;
 
-public class ApplicantManager:MonoBehaviour
+public class ApplicantManager : MonoBehaviour
 {
     private DayData currentDayData;
     private List<Applicant> applicants = new List<Applicant>();
     private int currentApplicantIndex = -1; // Start with no applicant selected
     private List<OriginSymbolPair> shuffledPairs;
 
-    // Set the DayData for this manager
+    // Serialized Fields for Applicant Generation
+    [Header("Applicant Generation Settings")]
+    [SerializeField] private int minBirthYear = 4015;
+    [SerializeField] private int maxBirthYear = 4065;
+    [SerializeField] private int minExpirationYear = 4065;
+    [SerializeField] private int maxExpirationYear = 4075;
+    [SerializeField][Range(0f, 1f)] private float invalidApplicantChance = 0.3f; // 30% chance to generate an invalid applicant
+
+    // Serialized Fields for Invalid Data Generation
+    [Header("Invalid Data Settings")]
+    [SerializeField] private int unrealisticBirthYearMin = 6080;
+    [SerializeField] private int unrealisticBirthYearMax = 7000;
+    [SerializeField] private int expiredPassportOffsetMin = -10;
+    [SerializeField] private int expiredPassportOffsetMax = -1;
+
     public void SetDayData(DayData dayData)
     {
         if (dayData == null)
@@ -43,7 +56,6 @@ public class ApplicantManager:MonoBehaviour
         Debug.Log($"Generated {applicants.Count} applicants for the day.");
     }
 
-
     public List<OriginSymbolPair> GetShuffledPairs()
     {
         if (shuffledPairs == null || shuffledPairs.Count == 0)
@@ -53,32 +65,6 @@ public class ApplicantManager:MonoBehaviour
 
         return shuffledPairs;
     }
-
-    public void GenerateApplicants(DayData dayData)
-    {
-        if (dayData == null)
-        {
-            Debug.LogError("DayData is null!");
-            return;
-        }
-
-        int maxApplicants = dayData.maxApplicantsPerDay;
-        Debug.Log($"DayData maxApplicantsPerDay: {maxApplicants}");
-
-        for (int i = 0; i < maxApplicants; i++)
-        {
-            Applicant applicant = GenerateApplicant();
-            if (applicant != null)
-            {
-                applicants.Add(applicant);
-                Debug.Log($"Generated Applicant: {applicant.Name}, Origin: {applicant.Origin}");
-            }
-        }
-
-        Debug.Log($"Generated {applicants.Count} applicants for the day.");
-    }
-
-
 
     public bool GenerateNextApplicant()
     {
@@ -93,7 +79,6 @@ public class ApplicantManager:MonoBehaviour
         return true; // Successfully moved to next applicant
     }
 
-
     public Applicant GetCurrentApplicant()
     {
         if (currentApplicantIndex >= 0 && currentApplicantIndex < applicants.Count)
@@ -104,6 +89,7 @@ public class ApplicantManager:MonoBehaviour
         Debug.LogError("No current applicant available!");
         return null;
     }
+
     public Applicant GenerateApplicant()
     {
         if (currentDayData == null)
@@ -128,12 +114,13 @@ public class ApplicantManager:MonoBehaviour
             Origin = pair.origin,
             RegionSymbol = pair.symbol,
             FaceImage = currentDayData.alienImages[Random.Range(0, currentDayData.alienImages.Length)],
-            BirthYear = Random.Range(4015, 4065),
-            ExpirationYear = Random.Range(4065, 4075),
+            BirthYear = Random.Range(minBirthYear, maxBirthYear),
+            ExpirationYear = Random.Range(minExpirationYear, maxExpirationYear),
             RandomDialogues = currentDayData.dialogueLines
         };
+
         // Decide if the applicant should be invalid
-        bool isInvalidApplicant = Random.value < 0.3f; // 30% chance of being invalid
+        bool isInvalidApplicant = Random.value < invalidApplicantChance;
         if (isInvalidApplicant)
         {
             GenerateInvalidData(applicant); // Modify applicant to be invalid
@@ -143,12 +130,10 @@ public class ApplicantManager:MonoBehaviour
         return applicant;
     }
 
-
-public bool AreAllApplicantsProcessed()
+    public bool AreAllApplicantsProcessed()
     {
         return currentApplicantIndex >= applicants.Count - 1;
     }
-
 
     private void GenerateInvalidData(Applicant applicant)
     {
@@ -157,13 +142,12 @@ public bool AreAllApplicantsProcessed()
         switch (invalidType)
         {
             case 0: // Invalid Birth Year
-                applicant.BirthYear = Random.Range(6080, 7000); // Unrealistic year
+                applicant.BirthYear = Random.Range(unrealisticBirthYearMin, unrealisticBirthYearMax);
                 Debug.Log("Invalid applicant: Unrealistic birth year.");
                 break;
 
             case 1: // Expired Passport
-                int currentYear = 4065;
-                applicant.ExpirationYear = Random.Range(currentYear - 10, currentYear - 1); // Expired year
+                applicant.ExpirationYear = Random.Range(minExpirationYear + expiredPassportOffsetMin, minExpirationYear + expiredPassportOffsetMax);
                 Debug.Log("Invalid applicant: Expired passport.");
                 break;
 
@@ -173,5 +157,4 @@ public bool AreAllApplicantsProcessed()
                 break;
         }
     }
-
 }
