@@ -34,3 +34,19 @@ MonoBehaviour:
   checkDateOfBirth: 1
   checkExpiration: 1
   checkOriginSymbol: 1
+  maxApplicantsPerDay: 5
+  alienNames:
+  - Zarqa Elion
+  - Nebulo Xel
+  - Quorin Arak
+  - Vetra Shiran
+  - Xilra Talos
+  alienImages:
+  - {fileID: 7737327473392905230, guid: 025fd58020c518d4c958ea7f87313125, type: 3}
+  - {fileID: 2526436953081296766, guid: 4b04fe9bf4ed3fc4d9d791d6ece547e3, type: 3}
+  - {fileID: -938877920921654472, guid: e3c6d7739fefad34793e2fe84f763f0c, type: 3}
+  dialogueLines:
+  - 'HI '
+  - Hello
+  - jojo
+  - kiki

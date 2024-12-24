@@ -20,27 +20,25 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        // Set the appropriate message
         string message = isGameOver
             ? "Game Over!\nYou have lost all your reputation."
             : "Day Complete!\nGet ready for the next level.";
 
-        // Use UIManager to update the UI
         uiManager.UpdateText(gameOverText, message);
         uiManager.ShowPanel(gameOverPanel);
 
-        // Disable all buttons
         uiManager.DisableAllButtons();
 
-        if (!isGameOver)
-        {
-            Debug.Log("Day Complete: Prepare for the next day.");
-        }
-        else
+        if (isGameOver)
         {
             Debug.Log("Game Over: Ending game session.");
         }
+        else
+        {
+            Debug.Log("Day Complete: Proceed to the next day.");
+        }
     }
+
 
     public void ProceedToNextDay()
     {
@@ -50,15 +48,16 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        // Check if there are more days
         if (dayManager.HasNextDay())
         {
             dayManager.AdvanceToNextDay();
+            dayManager.InitializeDay();
             Debug.Log($"Proceeding to Day {dayManager.currentDay}");
         }
         else
         {
-            ShowEndOfDayMessage(true); // End the game if no more days
+            ShowEndOfDayMessage(true);
         }
     }
+
 }

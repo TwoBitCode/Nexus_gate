@@ -2,8 +2,19 @@ using UnityEngine;
 
 public class DayManager : MonoBehaviour
 {
-    public DayData[] allDayData; // Array of all DayData objects
-    public int currentDay = 1;   // The current day in the game
+    public DayData[] allDayData;
+    public int currentDay = 1;
+    public AudioSource audioSource;
+
+    public void InitializeDay()
+    {
+        DayData dayData = GetCurrentDayData();
+        if (dayData == null) return;
+
+        // Play music
+        PlayDailyMusic(dayData);
+        Debug.Log($"Initializing Day {currentDay}");
+    }
 
     public DayData GetCurrentDayData()
     {
@@ -16,6 +27,27 @@ public class DayManager : MonoBehaviour
         return null;
     }
 
+    public void PlayDailyMusic(DayData dayData)
+    {
+        if (audioSource == null || dayData.dailyMusic == null)
+        {
+            Debug.LogError("AudioSource or dailyMusic is not assigned!");
+            return;
+        }
+
+        audioSource.clip = dayData.dailyMusic;
+        audioSource.loop = true;
+        audioSource.Play();
+    }
+
+    public void StopDailyMusic()
+    {
+        if (audioSource != null && audioSource.isPlaying)
+        {
+            audioSource.Stop();
+        }
+    }
+
     public bool HasNextDay()
     {
         return currentDay < allDayData.Length;
@@ -25,6 +57,7 @@ public class DayManager : MonoBehaviour
     {
         if (HasNextDay())
         {
+            StopDailyMusic();
             currentDay++;
         }
         else

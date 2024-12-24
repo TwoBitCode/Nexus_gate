@@ -8,4 +8,5 @@ public class Applicant
     public int ExpirationYear { get; set; }
     public Sprite FaceImage { get; set; }
     public Sprite RegionSymbol { get; set; }
+    public string[] RandomDialogues { get; set; } // Array of potential dialogue lines
 }

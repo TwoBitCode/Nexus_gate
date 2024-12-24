@@ -1,45 +1,12 @@
 ﻿using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using System.Linq;
 
 public class PassportManager : MonoBehaviour
 {
-    [Header("UI Elements")]
-    public TextMeshProUGUI passportText;
-    public Image applicantImage;
-    public Image regionSymbol;
+    public ApplicantManager applicantManager; // Handles applicant data
+    public UIApplicantPanelManager uiPanelManager; // Handles UI updates
+    public GameController gameController; // For end-of-day transitions
 
-    [Header("UI Panels")]
-    public GameObject applicantPanel;
-    public GameObject documentPanel;
-
-    [Header("Decision Buttons")]
-    public Button approveButton;
-    public Button denyButton;
-
-    [Header("Random Applicant Data")]
-    public Sprite[] alienImages;
-    public Sprite[] regionSymbols;
-    public string[] alienNames = { "Zarqa Elion", "Nebulo Xel", "Quorin Arak", "Vetra Shiran", "Xilra Talos" };
-
-    [Header("Applicant Handling")]
     private DayData currentDayData;
-    public int maxApplicantsPerDay = 5;
-    private int currentApplicantIndex = 0;
-
-    private string currentName;
-    private string currentOrigin;
-    private int birthYear;
-    private int expirationYear;
-    private Sprite currentFaceImage;
-    private Sprite currentRegionSymbol;
-
-    private List<OriginSymbolPair> shuffledPairs;
-    [Header("End of Day Settings")]
-    public GameObject gameOverPanel; // Reference to the GameOverPanel
-
 
     public void SetDayData(DayData dayData)
     {
@@ -50,287 +17,54 @@ public class PassportManager : MonoBehaviour
         }
 
         currentDayData = dayData;
-
-        if (currentDayData.originSymbolPairs == null || currentDayData.originSymbolPairs.Length == 0)
-        {
-            Debug.LogError("originSymbolPairs in currentDayData is null or empty!");
-            return;
-        }
-
-        shuffledPairs = new List<OriginSymbolPair>(currentDayData.originSymbolPairs);
-        shuffledPairs = shuffledPairs.OrderBy(a => Random.value).ToList();
-
-        Debug.Log("Applicant origins and symbols shuffled successfully.");
+        applicantManager.SetDayData(dayData); // Delegate to ApplicantManager
     }
 
-    public void GeneratePassport()
+    public void GenerateNextApplicant()
     {
-        Debug.Log($"GeneratePassport called for applicant {currentApplicantIndex}.");
-
-        if (currentApplicantIndex >= maxApplicantsPerDay)
+        Applicant applicant = applicantManager.GenerateApplicant();
+        if (applicant == null)
         {
-            Debug.Log("No more applicants for today.");
             EndDay();
             return;
         }
 
-        if (shuffledPairs == null || shuffledPairs.Count == 0)
+        uiPanelManager.UpdateApplicantUI(applicant);
+    }
+
+
+    public void OpenDocument()
+    {
+        // Get the current applicant from ApplicantManager
+        Applicant currentApplicant = applicantManager.GetCurrentApplicant();
+        if (currentApplicant == null)
         {
-            Debug.LogError("ShuffledPairs is null or empty.");
+            Debug.LogError("No current applicant to display!");
             return;
         }
 
-        // Use shuffled pairs to get origin and symbol
-        OriginSymbolPair pair = shuffledPairs[currentApplicantIndex % shuffledPairs.Count];
-        currentOrigin = pair.origin;
-        currentRegionSymbol = pair.symbol;
-
-        currentName = alienNames[Random.Range(0, alienNames.Length)];
-        currentFaceImage = alienImages[Random.Range(0, alienImages.Length)];
-
-        // Decide if the applicant is invalid
-        bool isInvalidApplicant = Random.value < 0.3f; // 30% chance of being invalid
-
-        if (isInvalidApplicant)
-        {
-            GenerateInvalidData(); // Generate invalid applicant data
-        }
-        else
-        {
-            GenerateRandomDates(); // Generate valid data
-        }
-
-        UpdateApplicantPanel();
+        // Open the document via UIApplicantPanelManager
+        uiPanelManager.OpenDocument(currentApplicant);
     }
 
-    private void GenerateInvalidData()
+    public void CloseDocument()
     {
-        int invalidType = Random.Range(0, 3); // 0: Invalid Birth Year, 1: Expired Passport, 2: Mismatched Symbol
-
-        switch (invalidType)
-        {
-            case 0: // Invalid Birth Year
-                birthYear = Random.Range(6080, 7000); // Unrealistic year
-                Debug.Log("Invalid applicant: Unrealistic birth year.");
-                break;
-
-            case 1: // Expired Passport
-                int currentYear = 4065;
-                expirationYear = Random.Range(currentYear - 10, currentYear - 1); // Expired year
-                Debug.Log("Invalid applicant: Expired passport.");
-                break;
-
-            case 2: // Mismatched Origin-Symbol Pair
-                currentRegionSymbol = regionSymbols[Random.Range(0, regionSymbols.Length)]; // Random symbol
-                Debug.Log("Invalid applicant: Origin and symbol mismatch.");
-                break;
-        }
+        // Close the document via UIApplicantPanelManager
+        uiPanelManager.CloseDocument();
     }
-
-
-
-    private void GenerateRandomDates()
-    {
-        int currentYear = 4065;
-        birthYear = Random.Range(currentYear - 50, currentYear - 18); // Logical birth year
-        expirationYear = Random.value < 0.8f ?
-            currentYear + Random.Range(1, 6) :  // Valid expiration
-            currentYear - Random.Range(1, 4);  // Expired passport (valid passports will override this)
-    }
-
-    private void GenerateMismatchedOriginSymbol()
-    {
-        // Keep the current origin but assign a random incorrect symbol
-        List<Sprite> allSymbols = new List<Sprite>(regionSymbols);
-        allSymbols.Remove(currentRegionSymbol); // Remove the valid symbol
-
-        if (allSymbols.Count > 0)
-        {
-            currentRegionSymbol = allSymbols[Random.Range(0, allSymbols.Count)];
-        }
-    }
-
-
-    private void CheckApplicantValidity()
-    {
-        bool isBirthYearValid = birthYear <= 4065 && birthYear >= 4015;
-        bool isExpirationValid = expirationYear >= 4065;
-        bool isSymbolValid = shuffledPairs.Any(pair => pair.origin == currentOrigin && pair.symbol == currentRegionSymbol);
-
-        if (!isBirthYearValid || !isExpirationValid || !isSymbolValid)
-        {
-            Debug.Log($"Invalid applicant: BirthYearValid={isBirthYearValid}, ExpirationValid={isExpirationValid}, SymbolValid={isSymbolValid}");
-        }
-    }
-
-    private void UpdateApplicantPanel()
-    {
-        if (applicantImage == null || regionSymbol == null || passportText == null)
-        {
-            Debug.LogError("One or more UI elements are not assigned in the PassportManager.");
-            return;
-        }
-
-        applicantImage.sprite = currentFaceImage;
-        regionSymbol.sprite = currentRegionSymbol;
-        passportText.text = $"Name: {currentName}\n" +
-                            $"Date of Birth: {birthYear}\n" +
-                            $"Origin: {currentOrigin}\n" +
-                            $"Expiration Year: {expirationYear}";
-
-        applicantPanel.SetActive(true);
-    }
-
-    public bool GenerateNextPassport()
-    {
-        if (currentApplicantIndex >= maxApplicantsPerDay)
-        {
-            Debug.Log("No more applicants for today.");
-            EndDay();
-            return false;
-        }
-
-        currentApplicantIndex++;
-        GeneratePassport();
-        return true;
-    }
-    [Header("Game Controller")]
-    public GameController gameController;
 
     private void EndDay()
     {
         Debug.Log("End of Day! All applicants have been processed.");
-        applicantPanel.SetActive(false);
-        documentPanel.SetActive(false);
+        uiPanelManager.ToggleDocumentPanel(false); // Hide UI panels
 
         if (gameController != null)
         {
-            gameController.ShowEndOfDayMessage(false); // Day complete message
+            gameController.ShowEndOfDayMessage(false); // Show end-of-day message
         }
         else
         {
             Debug.LogError("GameController is not assigned in PassportManager!");
         }
     }
-
-
-    public void OpenDocument()
-    {
-        Debug.Log("OpenDocument called: Showing passport details.");
-        if (documentPanel != null)
-        {
-            documentPanel.SetActive(true); // Show the document panel
-        }
-
-        passportText.text = $"Name: {currentName}\n" +
-                            $"Date of Birth: {birthYear}\n" +
-                            $"Origin: {currentOrigin}\n" +
-                            $"Expiration Year: {expirationYear}";
-
-        EnableDecisionButtons(false);
-    }
-
-    public void CloseDocument()
-    {
-        Debug.Log("CloseDocument called: Hiding passport details.");
-        if (documentPanel != null)
-        {
-            documentPanel.SetActive(false); // Hide the document panel
-        }
-
-        EnableDecisionButtons(true);
-    }
-
-    private void EnableDecisionButtons(bool enable)
-    {
-        if (approveButton != null) approveButton.interactable = enable;
-        if (denyButton != null) denyButton.interactable = enable;
-
-        Debug.Log($"Decision buttons interactable: {enable}");
-    }
-    public bool IsValidOriginSymbol(string origin, Sprite symbol)
-    {
-        return shuffledPairs.Any(pair => pair.origin == origin && pair.symbol == symbol);
-    }
-    public Applicant GenerateApplicant()
-    {
-        if (shuffledPairs == null || shuffledPairs.Count == 0)
-        {
-            Debug.LogError("ShuffledPairs is null or empty.");
-            return null;
-        }
-
-        var pair = shuffledPairs[currentApplicantIndex % shuffledPairs.Count];
-        var applicant = new Applicant
-        {
-            Name = alienNames[Random.Range(0, alienNames.Length)],
-            Origin = pair.origin,
-            RegionSymbol = pair.symbol,
-            FaceImage = alienImages[Random.Range(0, alienImages.Length)],
-            BirthYear = Random.Range(4015, 4065),
-            ExpirationYear = Random.Range(4065, 4070)
-        };
-
-        if (Random.value < 0.3f) // 30% chance of being invalid
-        {
-            GenerateInvalidData(applicant);
-        }
-
-        UpdateApplicantPanel(applicant);
-        return applicant;
-    }
-
-    private void GenerateInvalidData(Applicant applicant)
-    {
-        int invalidType = Random.Range(0, 3);
-        switch (invalidType)
-        {
-            case 0: applicant.BirthYear = Random.Range(6080, 7000); break;
-            case 1: applicant.ExpirationYear = Random.Range(4050, 4064); break;
-            case 2: applicant.RegionSymbol = regionSymbols[Random.Range(0, regionSymbols.Length)]; break;
-        }
-    }
-
-    private void UpdateApplicantPanel(Applicant applicant)
-    {
-        applicantImage.sprite = applicant.FaceImage;
-        regionSymbol.sprite = applicant.RegionSymbol;
-        passportText.text = $"Name: {applicant.Name}\n" +
-                            $"Date of Birth: {applicant.BirthYear}\n" +
-                            $"Origin: {applicant.Origin}\n" +
-                            $"Expiration Year: {applicant.ExpirationYear}";
-    }
-    public Applicant GetCurrentApplicant()
-    {
-        return new Applicant
-        {
-            Name = currentName,
-            Origin = currentOrigin,
-            BirthYear = birthYear,
-            ExpirationYear = expirationYear,
-            FaceImage = currentFaceImage,
-            RegionSymbol = currentRegionSymbol
-        };
-    }
-    public List<OriginSymbolPair> GetShuffledPairs()
-    {
-        return shuffledPairs;
-    }
-    public bool LoadNextApplicant(TextMeshProUGUI resultText, UIManagerMainScene uiManager)
-    {
-        if (!GenerateNextPassport())
-        {
-            Debug.Log("End of day reached.");
-            uiManager.UpdateResultText(resultText, "No more applicants for today!");
-            return false;
-        }
-
-        uiManager.UpdateResultText(resultText, "Awaiting decision...");
-        return true;
-    }
-
-
-
-
-
 }

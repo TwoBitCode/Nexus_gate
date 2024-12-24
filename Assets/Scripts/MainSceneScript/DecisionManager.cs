@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class DecisionManager : MonoBehaviour
 {
     [Header("References")]
-    public PassportManager passportManager;
+    public ApplicantManager applicantManager;
     public TextMeshProUGUI resultText;
     public GameObject gameOverPanel;
     public UIManagerMainScene uiManager;
@@ -18,6 +18,9 @@ public class DecisionManager : MonoBehaviour
 
     private int currentReputation;
     private bool isGameOver = false;
+    public UIApplicantPanelManager uiApplicantPanelManager; // Reference to UIApplicantPanelManager
+    [Header("Game Controller")]
+    public GameController gameController;
 
     private void Start()
     {
@@ -46,7 +49,8 @@ public class DecisionManager : MonoBehaviour
 
     private void EvaluateDecision(bool isApproved)
     {
-        Applicant applicant = passportManager.GetCurrentApplicant();
+        Applicant applicant = applicantManager.GetCurrentApplicant(); // Use ApplicantManager
+
         if (applicant == null)
         {
             Debug.LogError("No applicant found for decision evaluation.");
@@ -54,7 +58,8 @@ public class DecisionManager : MonoBehaviour
         }
 
         Validator validator = new Validator();
-        List<OriginSymbolPair> shuffledPairs = passportManager.GetShuffledPairs();
+        List<OriginSymbolPair> shuffledPairs = applicantManager.GetShuffledPairs(); // If required
+
         if (shuffledPairs == null || shuffledPairs.Count == 0)
         {
             Debug.LogError("Shuffled pairs list is null or empty.");
@@ -73,9 +78,9 @@ public class DecisionManager : MonoBehaviour
             }
             else
             {
-                // Trigger Game Over for a critical mistake
-                GameOver("You approved an invalid applicant! Critical Error!");
-                return; // Stop further execution
+                AdjustReputation(-10); // Penalty for approving an invalid applicant
+                GameOver("You approved an invalid applicant! Critical Error.");
+                return; // Exit early
             }
         }
         else
@@ -86,8 +91,9 @@ public class DecisionManager : MonoBehaviour
             }
             else
             {
+                AdjustReputation(-10);
                 uiManager.UpdateResultText(resultText, "Wrong Decision! Valid applicant denied.");
-                AdjustReputation(-reputationPenalty);
+
             }
         }
 
@@ -97,22 +103,28 @@ public class DecisionManager : MonoBehaviour
         }
     }
 
-
     private void AdjustReputation(int amount)
     {
+        Debug.Log($"AdjustReputation called. Current Reputation: {currentReputation}, Adjustment: {amount}");
+
+        // Adjust reputation
         currentReputation += amount;
+
+        // Ensure reputation stays within bounds
+        currentReputation = Mathf.Clamp(currentReputation, 0, maxReputation);
+
+        // Update the UI
         uiManager.UpdateReputationBar(reputationBar, currentReputation, maxReputation);
 
+        Debug.Log($"Reputation after adjustment: {currentReputation}");
+
+        // Check if reputation has dropped to zero
         if (currentReputation <= 0)
         {
             GameOver("Your reputation has dropped to zero! Game Over.");
         }
     }
 
-    private void InvokeLoadNextApplicant()
-    {
-        passportManager.LoadNextApplicant(resultText, uiManager);
-    }
 
 
     private void GameOver(string message)
@@ -127,5 +139,47 @@ public class DecisionManager : MonoBehaviour
 
         Debug.Log(message);
     }
+
+
+    private void InvokeLoadNextApplicant()
+    {
+        // Check if all applicants have been processed
+        if (applicantManager.AreAllApplicantsProcessed())
+        {
+            if (currentReputation > 0)
+            {
+                // Day Complete
+                gameController.ShowEndOfDayMessage(false);
+            }
+            else
+            {
+                // Game Over
+                gameController.ShowEndOfDayMessage(true);
+            }
+            return;
+        }
+
+        // Generate the next applicant
+        if (applicantManager.GenerateNextApplicant())
+        {
+            Applicant nextApplicant = applicantManager.GetCurrentApplicant();
+            if (nextApplicant != null)
+            {
+                uiApplicantPanelManager.UpdateApplicantUI(nextApplicant); // Correct UI update call
+                uiManager.UpdateResultText(resultText, ""); // Reset result text for the next applicant
+            }
+
+            else
+            {
+                Debug.LogError("Failed to retrieve the next applicant!");
+            }
+        }
+        else
+        {
+            Debug.Log("No more applicants to load.");
+        }
+    }
+
+
 
 }

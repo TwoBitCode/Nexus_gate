@@ -13,34 +13,43 @@ public class StartGameManager : MonoBehaviour
     public GameObject documentPanel;
     public Slider reputationBar;
     public int maxReputation = 100;
+    public AudioSource audioSource; // Reference to the AudioSource in the scene
 
     [Header("Game Managers")]
-    public PassportManager passportManager;
+    public ApplicantManager applicantManager; // Reference to the ApplicantManager
     public DayManager dayManager; // Reference to the DayManager
     private UIManagerMainScene uiManager; // Reference to the centralized UIManager
-
+    private int currentReputation;
     private void Start()
     {
         uiManager = GetComponent<UIManagerMainScene>();
-        if (dayManager == null || uiManager == null)
+        if (dayManager == null || uiManager == null || applicantManager == null)
         {
-            Debug.LogError("DayManager or UIManager is missing on StartGameManager.");
+            Debug.LogError("DayManager, ApplicantManager, or UIManager is missing on StartGameManager.");
             return;
         }
+
+        currentReputation = maxReputation; // Initialize reputation
+        uiManager.UpdateReputationBar(reputationBar, currentReputation, maxReputation); // Update UI
 
         InitializeDay();
     }
 
     private void InitializeDay()
     {
-        DayData currentDayData = dayManager.GetCurrentDayData();
-        if (currentDayData == null)
+        if (dayManager == null)
         {
-            Debug.LogError("DayData is missing for the current day!");
+            Debug.LogError("DayManager is not assigned!");
             return;
         }
 
+        // Initialize the current day
+        dayManager.InitializeDay();
+
         // Set up the UI for the current day
+        DayData currentDayData = dayManager.GetCurrentDayData();
+        if (currentDayData == null) return;
+
         uiManager.ShowPanel(rulesPanel);
         uiManager.UpdateText(rulesText, string.Join("\n", currentDayData.newRules));
         uiManager.HidePanel(applicantPanel);
@@ -53,7 +62,6 @@ public class StartGameManager : MonoBehaviour
             reputationBar.value = maxReputation;
         }
 
-        // Set up the start button
         if (startButton != null)
         {
             startButton.onClick.RemoveAllListeners();
@@ -66,26 +74,55 @@ public class StartGameManager : MonoBehaviour
         StartCoroutine(StartGameRoutine());
     }
 
+    public UIApplicantPanelManager applicantPanelManager; // Reference to the correct UI manager
+
     private IEnumerator StartGameRoutine()
     {
         DayData currentDayData = dayManager.GetCurrentDayData();
-        if (passportManager == null || currentDayData == null)
+        if (currentDayData == null)
         {
-            Debug.LogError("PassportManager or DayData is missing!");
+            Debug.LogError("DayData is missing or not assigned in DayManager!");
             yield break;
         }
 
-        // Pass the DayData to PassportManager
-        passportManager.SetDayData(currentDayData);
+        // Log the maxApplicantsPerDay for verification
+        Debug.Log($"DayData maxApplicantsPerDay: {currentDayData.maxApplicantsPerDay}");
 
-        // Transition to applicant panel
+        applicantManager.SetDayData(currentDayData);
+
+        if (!applicantManager.GenerateNextApplicant())
+        {
+            Debug.LogError("Failed to generate the first applicant.");
+            yield break;
+        }
+
+        Applicant firstApplicant = applicantManager.GetCurrentApplicant();
+        if (firstApplicant == null)
+        {
+            Debug.LogError("First applicant generation failed!");
+            yield break;
+        }
+
         uiManager.HidePanel(rulesPanel);
         uiManager.ShowPanel(applicantPanel);
+        applicantPanelManager.UpdateApplicantUI(firstApplicant);
 
-        // Generate the first passport
-        passportManager.GeneratePassport();
-        Debug.Log("Game started: Passport generated successfully.");
-
+        Debug.Log("Game started successfully.");
         yield break;
+    }
+
+
+
+    public void PlayDailyMusic(DayData dayData)
+    {
+        if (audioSource == null || dayData == null || dayData.dailyMusic == null)
+        {
+            Debug.LogError("AudioSource or dailyMusic is not assigned!");
+            return;
+        }
+
+        audioSource.clip = dayData.dailyMusic;
+        audioSource.loop = true; // Ensure the music loops
+        audioSource.Play();
     }
 }

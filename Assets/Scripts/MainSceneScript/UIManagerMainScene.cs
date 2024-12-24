@@ -4,6 +4,10 @@ using TMPro;
 
 public class UIManagerMainScene : MonoBehaviour
 {
+    public Image applicantImage;
+    public Image regionSymbol;
+    public TextMeshProUGUI passportText;
+
     public void ShowPanel(GameObject panel)
     {
         if (panel != null)
@@ -73,6 +77,33 @@ public class UIManagerMainScene : MonoBehaviour
             UpdateText(resultText, message); // Reuse UpdateText method
         }
     }
+    public void UpdateApplicantUI(Applicant applicant)
+    {
+        if (applicant == null)
+        {
+            Debug.LogError("Applicant is null! Cannot update UI.");
+            return;
+        }
+
+        // Ensure all necessary UI components are accessible
+        if (applicantImage == null || regionSymbol == null || passportText == null)
+        {
+            Debug.LogError("One or more UI elements are not assigned in UIManagerMainScene.");
+            return;
+        }
+
+        // Update UI elements with applicant data
+        applicantImage.sprite = applicant.FaceImage;
+        regionSymbol.sprite = applicant.RegionSymbol;
+        passportText.text = $"Name: {applicant.Name}\n" +
+                            $"Date of Birth: {applicant.BirthYear}\n" +
+                            $"Origin: {applicant.Origin}\n" +
+                            $"Expiration Year: {applicant.ExpirationYear}";
+
+        Debug.Log("Applicant UI successfully updated.");
+    }
+
+
 
 
 
