@@ -15,7 +15,7 @@ public class ApplicantManager : MonoBehaviour
     [SerializeField] private int maxBirthYear = 4065;
     [SerializeField] private int minExpirationYear = 4065;
     [SerializeField] private int maxExpirationYear = 4075;
-    [SerializeField][Range(0f, 1f)] private float invalidApplicantChance = 0.3f; // 30% chance to generate an invalid applicant
+    [SerializeField] [Range(0f, 1f)] private float invalidApplicantChance = 0.3f; // 30% chance to generate an invalid applicant
 
     // Serialized Fields for Invalid Data Generation
     [Header("Invalid Data Settings")]
