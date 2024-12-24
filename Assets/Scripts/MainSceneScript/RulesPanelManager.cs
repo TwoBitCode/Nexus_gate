@@ -1,20 +1,30 @@
+using TMPro;
 using UnityEngine;
 
 public class RulesPanelManager : MonoBehaviour
 {
     [Header("UI Elements")]
-    public GameObject rulesPanel; // Reference to the rules panel
+    public GameObject rulesPanel;
+    public TextMeshProUGUI rulesText;
 
-    public void ToggleRulesPanel(bool isOpen)
+    public void ShowRules(DayData dayData)
     {
-        if (rulesPanel != null)
+        if (rulesPanel != null && rulesText != null)
         {
-            rulesPanel.SetActive(isOpen);
-            Debug.Log($"Rules panel {(isOpen ? "opened" : "closed")}.");
+            rulesPanel.SetActive(true);
+            rulesText.text = string.Join("\n", dayData.newRules);
         }
         else
         {
-            Debug.LogError("Rules panel reference is missing in the inspector!");
+            Debug.LogError("Rules panel or text reference is missing.");
+        }
+    }
+
+    public void HideRules()
+    {
+        if (rulesPanel != null)
+        {
+            rulesPanel.SetActive(false);
         }
     }
 }

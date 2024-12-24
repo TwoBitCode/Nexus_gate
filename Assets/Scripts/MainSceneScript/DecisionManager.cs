@@ -1,5 +1,7 @@
 using UnityEngine;
 using TMPro;
+using System.Linq;
+using UnityEngine.UI;
 
 public class DecisionManager : MonoBehaviour
 {
@@ -8,25 +10,34 @@ public class DecisionManager : MonoBehaviour
     public TextMeshProUGUI resultText;
     public GameObject gameOverPanel;
 
+    [Header("Day Data")]
+    public DayData currentDayData; // Dynamically load the DayData for the current day
+
     [Header("Reputation Settings")]
+    public Slider reputationBar; // Reference to the UI slider
     [SerializeField] private int maxReputation = 100;
     [SerializeField] private int reputationPenalty = 10;
 
-    [Header("Decision Settings")]
-    [SerializeField] private float nextApplicantDelay = 2.0f; // Delay before showing next applicant
-
-    [Header("Applicant Settings")]
-    [SerializeField] private string[] validOrigins = { "Zarquinia", "Nebulon IV", "Andromeda Prime", "Galva-Theta", "Xyron-9" };
-    [SerializeField] private string[] dangerousOrigins = { "Phantom Ring", "Oblivion Expanse" };
-
     private int currentReputation;
     private bool isGameOver = false;
-    private int currentYear = 4065; // Current game year
+    //private int currentYear = 4065; // Current game year
+
+
 
     private void Start()
     {
         currentReputation = maxReputation;
-        resultText.text = ""; // Initialize feedback text
+        if (reputationBar != null)
+        {
+            reputationBar.maxValue = maxReputation; // Set the maximum value for the bar
+            reputationBar.value = maxReputation;    // Fill the bar to the maximum at the start
+        }
+        else
+        {
+            Debug.LogError("ReputationBar is not assigned in the Inspector!");
+        }
+
+        resultText.text = ""; // Clear the result text at the start
     }
 
     public void Approve()
@@ -41,88 +52,103 @@ public class DecisionManager : MonoBehaviour
         EvaluateDecision(false);
     }
 
+
     private void EvaluateDecision(bool isApproved)
     {
+        // Extract passport data
         string[] passportData = passportManager.passportText.text.Split('\n');
-
         string origin = SafeExtractField(passportData, 2, "Origin");
         int birthYear = SafeParseYear(SafeExtractField(passportData, 1, "Date of Birth"));
         int expirationYear = SafeParseYear(SafeExtractField(passportData, 3, "Expiration Year"));
+        Sprite displayedSymbol = passportManager.regionSymbol.sprite;
 
-        if (birthYear < 0 || expirationYear < 0) return; // Invalid data check
-
-        bool isExpired = expirationYear < currentYear;
-        bool isFakeOrigin = !System.Array.Exists(validOrigins, o => o == origin);
-        bool isDangerous = System.Array.Exists(dangerousOrigins, o => o == origin);
+        bool isOriginValid = passportManager.IsValidOriginSymbol(origin, displayedSymbol);
+        bool isBirthYearValid = birthYear <= 4065 && birthYear >= 4015;
+        bool isExpirationValid = expirationYear >= 4065;
 
         if (isApproved)
         {
-            if (isDangerous)
+            if (isOriginValid && isBirthYearValid && isExpirationValid)
             {
-                GameOver($"You approved a dangerous applicant from {origin}. They pose a threat to the station!");
-                return;
-            }
-            else if (isExpired || isFakeOrigin)
-            {
-                string reason = isExpired ? "expired passport" : "fake origin";
-                GameOver($"You approved an invalid applicant! Reason: {reason}. Check the passport carefully next time.");
-                return;
+                resultText.text = "Correct Decision! Applicant Approved.";
             }
             else
             {
-                resultText.text = "Correct Decision! Applicant Approved.";
+                string reason = !isOriginValid
+                    ? "Origin and symbol mismatch"
+                    : (!isBirthYearValid ? "Invalid birth year" : "Expired passport");
+                GameOver($"You approved an invalid applicant! Reason: {reason}");
+                return;
             }
         }
         else // Denied
         {
-            if (!isExpired && !isFakeOrigin && !isDangerous)
-            {
-                AdjustReputation(-reputationPenalty);
-                resultText.text = $"Wrong Decision! Valid applicant from {origin} denied. Reputation decreased.";
-            }
-            else
+            if (!isOriginValid || !isBirthYearValid || !isExpirationValid)
             {
                 resultText.text = "Correct Decision! Unauthorized Applicant Denied.";
             }
+            else
+            {
+                resultText.text = "Wrong Decision! Valid applicant denied.";
+                AdjustReputation(-reputationPenalty); // Deduct reputation
+            }
         }
 
-        Invoke(nameof(GenerateNextApplicant), nextApplicantDelay);
+        Invoke(nameof(LoadNextApplicant), 1.5f);
     }
+
+
+
 
     private void AdjustReputation(int amount)
     {
         currentReputation += amount;
+        reputationBar.value = currentReputation; // Update the UI slider
+
         if (currentReputation <= 0)
         {
             GameOver("Your reputation has dropped to zero! Game Over.");
         }
     }
 
-    private void GenerateNextApplicant()
-    {
-        if (isGameOver) return;
 
-        resultText.text = ""; // Reset feedback text
-        passportManager.GeneratePassport();
+    private void LoadNextApplicant()
+    {
+        Debug.Log("LoadNextApplicant called.");
+
+        if (!passportManager.GenerateNextPassport())
+        {
+            Debug.Log("End of day reached.");
+            resultText.text = "No more applicants for today!";
+            return;
+        }
+
+        // Clear result text and prepare for the next decision
+        resultText.text = "Awaiting decision...";
+        Debug.Log("Ready for next applicant.");
     }
+
+    [Header("Game Controller")]
+    public GameController gameController;
 
     private void GameOver(string message)
     {
-        if (isGameOver) return;
-
         isGameOver = true;
-        Debug.Log("Game Over Triggered.");
-        resultText.text = message;
 
-        if (gameOverPanel != null)
+        if (gameController != null)
         {
-            gameOverPanel.SetActive(true);
+            gameController.ShowEndOfDayMessage(true); // Game over message
         }
         else
         {
-            Debug.LogError("Game Over panel is not assigned in the inspector!");
+            Debug.LogError("GameController is not assigned in DecisionManager!");
         }
+
+        Debug.Log(message);
     }
+
+
+
 
     private string SafeExtractField(string[] lines, int index, string fieldName)
     {
@@ -142,5 +168,7 @@ public class DecisionManager : MonoBehaviour
         }
         Debug.LogError($"Failed to parse year: {yearString}. Ensure the passport data format is correct.");
         return -1; // Invalid year
+
+
     }
 }

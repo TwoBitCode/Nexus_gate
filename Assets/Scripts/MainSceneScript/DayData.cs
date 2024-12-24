@@ -9,8 +9,17 @@ public class DayData : ScriptableObject
 
     [Header("Gameplay Rules")]
     public string[] newRules;        // Rules for the main game scene
+    public OriginSymbolPair[] originSymbolPairs; // List of origins and their corresponding symbols
 
-    [Header("Characters and Events")]
-    public GameObject[] charactersForTheDay; // Prefabs or GameObjects for the main game
-    public string[] importantEvents;         // Special instructions/events
+    [Header("Applicant Validation")]
+    public bool checkDateOfBirth;    // Whether to check the date of birth
+    public bool checkExpiration;     // Whether to check the expiration date
+    public bool checkOriginSymbol;   // Whether to validate the origin matches the symbol
+}
+
+[System.Serializable]
+public class OriginSymbolPair
+{
+    public string origin;       // The name of the origin
+    public Sprite symbol;       // The corresponding region symbol
 }

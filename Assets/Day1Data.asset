@@ -13,7 +13,24 @@ MonoBehaviour:
   m_Name: Day1Data
   m_EditorClassIdentifier: 
   dailyMessages: []
-  dailyMusic: {fileID: 0}
-  newRules: []
-  charactersForTheDay: []
-  importantEvents: []
+  dailyMusic: {fileID: 8300000, guid: 6eb3bd08a68e5f042a13002a7591bf49, type: 3}
+  newRules:
+  - 'Daily Messages: - "Welcome to Nexus Gate: Zion." - "Check the Date of Birth
+    is valid." - "Accepted Alien Planets: Zarquinia, Nebulon IV, Andromeda Prime."
+    - "If the origin is not listed, DENY the applicant."  New Rules: - "Check Date
+    of Birth." - "Only approve applicants from Zarquinia, Nebulon IV, Andromeda Prime."
+    - "Deny applicants with unlisted origins." '
+  originSymbolPairs:
+  - origin: Androme Prime
+    symbol: {fileID: 3835903863107237145, guid: db724e9a61d0c814186e1204a3df8631, type: 3}
+  - origin: Galva Theta
+    symbol: {fileID: -6878386333803046439, guid: 951038c927f9c204e9000848f752b2b6, type: 3}
+  - origin: Neblun
+    symbol: {fileID: 3008173217581035123, guid: c49ca4ed87284a04b9b4586cb4780d05, type: 3}
+  - origin: Xyron 9
+    symbol: {fileID: -4072195441657558389, guid: 344ec10bf49826a43bb1a8e816f2f1ee, type: 3}
+  - origin: Zarquinia
+    symbol: {fileID: -8615504827443383937, guid: bed9560e56ed76c499e1b8d866aa7ba1, type: 3}
+  checkDateOfBirth: 1
+  checkExpiration: 1
+  checkOriginSymbol: 1
