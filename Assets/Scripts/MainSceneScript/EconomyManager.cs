@@ -31,7 +31,7 @@ public class EconomyManager : MonoBehaviour
 
     public int CalculateEndOfDayEarnings(bool isSuccessfulDay)
     {
-        if (!isSuccessfulDay) return 0; // No earnings if the day is unsuccessful
+        if (!isSuccessfulDay) return 0; // If the game is over, no earnings for the day
         int earnings = dailySalary - finesIncurred;
         Debug.Log($"End of day earnings calculated. Salary: {dailySalary}, Fines: {finesIncurred}, Earnings: {earnings}");
         return earnings;

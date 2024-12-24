@@ -7,6 +7,9 @@ public class UIManagerMainScene : MonoBehaviour
     public Image applicantImage;
     public Image regionSymbol;
     public TextMeshProUGUI passportText;
+    [Header("Coin UI")]
+    public TextMeshProUGUI coinText; // Reference to the coin text UI
+
 
     public void ShowPanel(GameObject panel)
     {
@@ -101,6 +104,17 @@ public class UIManagerMainScene : MonoBehaviour
                             $"Expiration Year: {applicant.ExpirationYear}";
 
         Debug.Log("Applicant UI successfully updated.");
+    }
+    public void UpdateCoinsDisplay(int coins)
+    {
+        if (coinText != null)
+        {
+            coinText.text = $"Coins: {coins}";
+        }
+        else
+        {
+            Debug.LogError("Coin Text UI is not assigned in UIManagerMainScene!");
+        }
     }
 
 

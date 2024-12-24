@@ -1,6 +1,5 @@
 using UnityEngine;
 using TMPro;
-using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
@@ -13,6 +12,24 @@ public class GameController : MonoBehaviour
     public UIManagerMainScene uiManager;  // Reference to the centralized UIManager
     public EconomyManager economyManager; // Reference to the EconomyManager
 
+    private void Start()
+    {
+        // Initialize EconomyManager if assigned
+        if (economyManager == null)
+        {
+            Debug.LogError("EconomyManager is not assigned in GameController!");
+        }
+    }
+
+    //private void OnDestroy()
+    //{
+    //    // Unsubscribe from the CoinsUpdated event when GameController is destroyed
+    //    if (economyManager != null)
+    //    {
+    //        economyManager.CoinsUpdated -= uiManager.UpdateCoinsDisplay;
+    //    }
+    //}
+
     public void ShowEndOfDayMessage(bool isGameOver)
     {
         if (uiManager == null)
@@ -21,33 +38,25 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        // Calculate earnings through EconomyManager
+        // Calculate earnings for the day
         int endOfDayEarnings = economyManager.CalculateEndOfDayEarnings(!isGameOver);
 
-        // Add coins for the day to the total in EconomyManager
+        // Update total coins in EconomyManager
         economyManager.AddCoins(endOfDayEarnings);
 
-        // Format fines display
+        // Format the fines and earnings for display
         string fineDisplay = economyManager.GetFines() == 0 ? "0" : $"-{economyManager.GetFines()}";
-
-        // Create the summary message
-        string coinSummary = isGameOver
-            ? $"Game Over!\nYou earned {economyManager.GetTotalCoins()} coins in total."
+        string summaryMessage = isGameOver
+            ? $"Game Over!\nTotal Coins Earned: {economyManager.GetTotalCoins()}"
             : $"Day Complete!\nSalary: {economyManager.GetDailySalary()}\nFines: {fineDisplay}\nEarnings: {endOfDayEarnings}";
 
-        // Update UI
-        uiManager.UpdateText(gameOverText, coinSummary);
+        // Update the game over text and show the panel
+        uiManager.UpdateText(gameOverText, summaryMessage);
         uiManager.ShowPanel(gameOverPanel);
         uiManager.DisableAllButtons();
 
-        if (isGameOver)
-        {
-            Debug.Log("Game Over: Ending game session.");
-        }
-        else
-        {
-            Debug.Log("Day Complete: Proceed to the next day.");
-        }
+        // Log the status
+        Debug.Log(isGameOver ? "Game Over: Ending game session." : "Day Complete: Proceed to the next day.");
     }
 
     public void ProceedToNextDay()
@@ -60,13 +69,15 @@ public class GameController : MonoBehaviour
 
         if (dayManager.HasNextDay())
         {
-            economyManager.ResetDailyEarnings(); // Reset fines for the new day
+            // Reset fines and proceed to the next day
+            economyManager.ResetDailyEarnings();
             dayManager.AdvanceToNextDay();
             dayManager.InitializeDay();
             Debug.Log($"Proceeding to Day {dayManager.currentDay}");
         }
         else
         {
+            // If no more days, end the game
             ShowEndOfDayMessage(true);
         }
     }
