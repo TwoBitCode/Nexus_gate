@@ -17,10 +17,6 @@ public class DecisionManager : MonoBehaviour
     [SerializeField] private int reputationPenalty = 10;
     private int currentReputation;
 
-    private bool isGameOver = false;
-    //private bool isPassportOpened = false; // Tracks if the passport was opened
-
-
     public UIApplicantPanelManager uiApplicantPanelManager;
     [Header("Game Controller")]
     public GameController gameController;
@@ -46,12 +42,11 @@ public class DecisionManager : MonoBehaviour
     {
         if (!uiApplicantPanelManager.IsPassportOpened)
         {
-            Debug.LogError("Cannot approve: Passport not opened.");
             uiManager.UpdateResultText(resultText, "You must open the passport before making a decision!");
+            Debug.Log("Cannot approve: Passport not opened.");
             return;
         }
 
-        // Proceed with evaluation
         EvaluateDecision(true);
     }
 
@@ -59,13 +54,11 @@ public class DecisionManager : MonoBehaviour
     {
         if (!uiApplicantPanelManager.IsPassportOpened)
         {
-            // Show a friendly message in the result text area
             uiManager.UpdateResultText(resultText, "Please open the passport before making a decision.");
             Debug.Log("Player attempted to deny without opening the passport.");
             return;
         }
 
-        // Proceed with evaluation
         EvaluateDecision(false);
     }
 
@@ -100,7 +93,7 @@ public class DecisionManager : MonoBehaviour
             }
             else
             {
-                gameController.AddFine(); // Add fine for invalid approval
+                gameController.economyManager.AddFine(); // Add fine for invalid approval
                 AdjustReputation(-reputationPenalty);
                 uiManager.UpdateResultText(resultText, "Invalid applicant approved! Fine incurred.");
             }
@@ -121,14 +114,10 @@ public class DecisionManager : MonoBehaviour
         Invoke(nameof(InvokeLoadNextApplicant), DecisionDelay);
     }
 
-
     private void AdjustReputation(int amount)
     {
-        Debug.Log($"AdjustReputation called. Current Reputation: {currentReputation}, Adjustment: {amount}");
-
         currentReputation += amount;
         currentReputation = Mathf.Clamp(currentReputation, 0, maxReputation);
-
         uiManager.UpdateReputationBar(reputationBar, currentReputation, maxReputation);
 
         if (currentReputation <= 0)
@@ -137,30 +126,18 @@ public class DecisionManager : MonoBehaviour
         }
     }
 
-
-    private void GameOver(string message)
-    {
-        isGameOver = true;
-        uiManager.DisableAllButtons();
-        uiManager.HandleGameOver(gameOverPanel, resultText, message);
-        Debug.Log(message);
-    }
-
     private void InvokeLoadNextApplicant()
     {
         if (applicantManager.AreAllApplicantsProcessed())
         {
-            // Show end-of-day summary
-            int endOfDayEarnings = gameController.CalculateEndOfDayEarnings(currentReputation > 0);
-            gameController.AddCoins(endOfDayEarnings);
-
+            // Delegate end-of-day logic to GameController
             if (currentReputation > 0)
             {
                 gameController.ShowEndOfDayMessage(false); // Successful day
             }
             else
             {
-                gameController. ShowEndOfDayMessage(true); // Unsuccessful day with summary
+                gameController.ShowEndOfDayMessage(true); // Unsuccessful day
             }
 
             return;
@@ -181,8 +158,4 @@ public class DecisionManager : MonoBehaviour
             Debug.Log("No more applicants to load.");
         }
     }
-
-
-
-
 }
