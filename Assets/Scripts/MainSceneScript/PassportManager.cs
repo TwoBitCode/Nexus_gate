@@ -252,5 +252,85 @@ public class PassportManager : MonoBehaviour
     {
         return shuffledPairs.Any(pair => pair.origin == origin && pair.symbol == symbol);
     }
+    public Applicant GenerateApplicant()
+    {
+        if (shuffledPairs == null || shuffledPairs.Count == 0)
+        {
+            Debug.LogError("ShuffledPairs is null or empty.");
+            return null;
+        }
+
+        var pair = shuffledPairs[currentApplicantIndex % shuffledPairs.Count];
+        var applicant = new Applicant
+        {
+            Name = alienNames[Random.Range(0, alienNames.Length)],
+            Origin = pair.origin,
+            RegionSymbol = pair.symbol,
+            FaceImage = alienImages[Random.Range(0, alienImages.Length)],
+            BirthYear = Random.Range(4015, 4065),
+            ExpirationYear = Random.Range(4065, 4070)
+        };
+
+        if (Random.value < 0.3f) // 30% chance of being invalid
+        {
+            GenerateInvalidData(applicant);
+        }
+
+        UpdateApplicantPanel(applicant);
+        return applicant;
+    }
+
+    private void GenerateInvalidData(Applicant applicant)
+    {
+        int invalidType = Random.Range(0, 3);
+        switch (invalidType)
+        {
+            case 0: applicant.BirthYear = Random.Range(6080, 7000); break;
+            case 1: applicant.ExpirationYear = Random.Range(4050, 4064); break;
+            case 2: applicant.RegionSymbol = regionSymbols[Random.Range(0, regionSymbols.Length)]; break;
+        }
+    }
+
+    private void UpdateApplicantPanel(Applicant applicant)
+    {
+        applicantImage.sprite = applicant.FaceImage;
+        regionSymbol.sprite = applicant.RegionSymbol;
+        passportText.text = $"Name: {applicant.Name}\n" +
+                            $"Date of Birth: {applicant.BirthYear}\n" +
+                            $"Origin: {applicant.Origin}\n" +
+                            $"Expiration Year: {applicant.ExpirationYear}";
+    }
+    public Applicant GetCurrentApplicant()
+    {
+        return new Applicant
+        {
+            Name = currentName,
+            Origin = currentOrigin,
+            BirthYear = birthYear,
+            ExpirationYear = expirationYear,
+            FaceImage = currentFaceImage,
+            RegionSymbol = currentRegionSymbol
+        };
+    }
+    public List<OriginSymbolPair> GetShuffledPairs()
+    {
+        return shuffledPairs;
+    }
+    public bool LoadNextApplicant(TextMeshProUGUI resultText, UIManagerMainScene uiManager)
+    {
+        if (!GenerateNextPassport())
+        {
+            Debug.Log("End of day reached.");
+            uiManager.UpdateResultText(resultText, "No more applicants for today!");
+            return false;
+        }
+
+        uiManager.UpdateResultText(resultText, "Awaiting decision...");
+        return true;
+    }
+
+
+
+
 
 }

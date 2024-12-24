@@ -16,10 +16,3 @@ public class DayData : ScriptableObject
     public bool checkExpiration;     // Whether to check the expiration date
     public bool checkOriginSymbol;   // Whether to validate the origin matches the symbol
 }
-
-[System.Serializable]
-public class OriginSymbolPair
-{
-    public string origin;       // The name of the origin
-    public Sprite symbol;       // The corresponding region symbol
-}
