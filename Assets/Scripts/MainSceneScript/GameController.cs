@@ -14,21 +14,18 @@ public class GameController : MonoBehaviour
 
     private void Start()
     {
-        // Initialize EconomyManager if assigned
+        // Initialize EconomyManager and ensure GameManager is ready
         if (economyManager == null)
         {
             Debug.LogError("EconomyManager is not assigned in GameController!");
         }
-    }
 
-    //private void OnDestroy()
-    //{
-    //    // Unsubscribe from the CoinsUpdated event when GameController is destroyed
-    //    if (economyManager != null)
-    //    {
-    //        economyManager.CoinsUpdated -= uiManager.UpdateCoinsDisplay;
-    //    }
-    //}
+        // Ensure GameManager is initialized
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("GameManager is not active in the scene!");
+        }
+    }
 
     public void ShowEndOfDayMessage(bool isGameOver)
     {
@@ -41,14 +38,14 @@ public class GameController : MonoBehaviour
         // Calculate earnings for the day
         int endOfDayEarnings = economyManager.CalculateEndOfDayEarnings(!isGameOver);
 
-        // Update total coins in EconomyManager
-        economyManager.AddCoins(endOfDayEarnings);
+        // Update GameManager's coins
+        GameManager.Instance.AddCoins(endOfDayEarnings);
 
         // Format the fines and earnings for display
         string fineDisplay = economyManager.GetFines() == 0 ? "0" : $"-{economyManager.GetFines()}";
         string summaryMessage = isGameOver
-            ? $"Game Over!\nTotal Coins Earned: {economyManager.GetTotalCoins()}"
-            : $"Day Complete!\nSalary: {economyManager.GetDailySalary()}\nFines: {fineDisplay}\nEarnings: {endOfDayEarnings}";
+            ? $"Game Over!\nTotal Coins Earned: {GameManager.Instance.coins}\nFinal Reputation: {GameManager.Instance.reputation}"
+            : $"Day Complete!\nSalary: {economyManager.GetDailySalary()}\nFines: {fineDisplay}\nEarnings: {endOfDayEarnings}\nReputation: {GameManager.Instance.reputation}";
 
         // Update the game over text and show the panel
         uiManager.UpdateText(gameOverText, summaryMessage);
@@ -71,6 +68,11 @@ public class GameController : MonoBehaviour
         {
             // Reset fines and proceed to the next day
             economyManager.ResetDailyEarnings();
+
+            // Ensure EconomyManager uses the current coins from GameManager
+            economyManager.AddCoins(GameManager.Instance.coins);
+
+            // Advance to the next day
             dayManager.AdvanceToNextDay();
             dayManager.InitializeDay();
             Debug.Log($"Proceeding to Day {dayManager.currentDay}");

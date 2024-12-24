@@ -3,18 +3,16 @@ using UnityEngine;
 public class EconomyManager : MonoBehaviour
 {
     [Header("Economy Settings")]
-    [SerializeField] private int startingCoins = 0;   // Initial coins for the player
     [SerializeField] private int dailySalary = 100;  // Base salary for completing a day
     [SerializeField] private int fineAmount = 20;    // Fine for invalid approvals
 
-    private int currentCoins;                        // Tracks player's total coins
     private int finesIncurred;                       // Tracks total fines for the day
 
     private void Start()
     {
-        currentCoins = startingCoins;
+        // Initialize fines and use GameManager for coins
         finesIncurred = 0;
-        Debug.Log($"Economy initialized. Starting coins: {currentCoins}");
+        Debug.Log($"Economy initialized. Starting coins: {GameManager.Instance.coins}");
     }
 
     public void AddFine()
@@ -25,8 +23,9 @@ public class EconomyManager : MonoBehaviour
 
     public void AddCoins(int amount)
     {
-        currentCoins += amount;
-        Debug.Log($"Added {amount} coins. Total coins: {currentCoins}");
+        // Update total coins in GameManager
+        GameManager.Instance.AddCoins(amount);
+        Debug.Log($"Added {amount} coins. Total coins: {GameManager.Instance.coins}");
     }
 
     public int CalculateEndOfDayEarnings(bool isSuccessfulDay)
@@ -34,6 +33,7 @@ public class EconomyManager : MonoBehaviour
         if (!isSuccessfulDay) return 0; // If the game is over, no earnings for the day
         int earnings = dailySalary - finesIncurred;
         Debug.Log($"End of day earnings calculated. Salary: {dailySalary}, Fines: {finesIncurred}, Earnings: {earnings}");
+
         return earnings;
     }
 
@@ -50,7 +50,7 @@ public class EconomyManager : MonoBehaviour
 
     public int GetTotalCoins()
     {
-        return currentCoins;
+        return GameManager.Instance.coins; // Get coins from GameManager
     }
 
     public int GetDailySalary()

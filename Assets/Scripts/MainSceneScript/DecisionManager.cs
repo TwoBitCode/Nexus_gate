@@ -15,7 +15,6 @@ public class DecisionManager : MonoBehaviour
     public Slider reputationBar;
     [SerializeField] private int maxReputation = 100;
     [SerializeField] private int reputationPenalty = 10;
-    private int currentReputation;
 
     public UIApplicantPanelManager uiApplicantPanelManager;
     [Header("Game Controller")]
@@ -27,13 +26,13 @@ public class DecisionManager : MonoBehaviour
 
     private void Start()
     {
-        currentReputation = maxReputation;
-
         if (uiManager == null)
         {
             Debug.LogError("UIManager is not assigned in the Inspector!");
         }
 
+        // Initialize the reputation bar with the current reputation from GameManager
+        int currentReputation = GameManager.Instance.reputation;
         uiManager.UpdateReputationBar(reputationBar, currentReputation, maxReputation);
         uiManager.UpdateResultText(resultText, "");
     }
@@ -116,8 +115,11 @@ public class DecisionManager : MonoBehaviour
 
     private void AdjustReputation(int amount)
     {
-        currentReputation += amount;
-        currentReputation = Mathf.Clamp(currentReputation, 0, maxReputation);
+        // Adjust reputation in GameManager
+        GameManager.Instance.AdjustReputation(amount);
+
+        // Update the reputation bar UI
+        int currentReputation = GameManager.Instance.reputation;
         uiManager.UpdateReputationBar(reputationBar, currentReputation, maxReputation);
 
         if (currentReputation <= 0)
@@ -131,7 +133,7 @@ public class DecisionManager : MonoBehaviour
         if (applicantManager.AreAllApplicantsProcessed())
         {
             // Delegate end-of-day logic to GameController
-            if (currentReputation > 0)
+            if (GameManager.Instance.reputation > 0)
             {
                 gameController.ShowEndOfDayMessage(false); // Successful day
             }
