@@ -15,6 +15,9 @@ public class UIApplicantPanelManager : MonoBehaviour
 
     public Button approveButton;
     public Button denyButton;
+    private bool isPassportOpened = false;
+
+    public bool IsPassportOpened => isPassportOpened;
 
     public void UpdateApplicantUI(Applicant applicant)
     {
@@ -63,6 +66,8 @@ public class UIApplicantPanelManager : MonoBehaviour
 
     public void OpenDocument(Applicant applicant)
     {
+        isPassportOpened = true; // Mark that the passport was opened
+
         if (documentPanel != null)
         {
             documentPanel.SetActive(true); // Show the document panel
@@ -79,6 +84,7 @@ public class UIApplicantPanelManager : MonoBehaviour
 
         EnableDecisionButtons(false); // Disable decision buttons when viewing the document
     }
+
 
     public void CloseDocument()
     {

@@ -18,6 +18,8 @@ public class DecisionManager : MonoBehaviour
     private int currentReputation;
 
     private bool isGameOver = false;
+    //private bool isPassportOpened = false; // Tracks if the passport was opened
+
 
     public UIApplicantPanelManager uiApplicantPanelManager;
     [Header("Game Controller")]
@@ -42,13 +44,28 @@ public class DecisionManager : MonoBehaviour
 
     public void Approve()
     {
-        if (isGameOver) return;
+        if (!uiApplicantPanelManager.IsPassportOpened)
+        {
+            Debug.LogError("Cannot approve: Passport not opened.");
+            uiManager.UpdateResultText(resultText, "You must open the passport before making a decision!");
+            return;
+        }
+
+        // Proceed with evaluation
         EvaluateDecision(true);
     }
 
     public void Deny()
     {
-        if (isGameOver) return;
+        if (!uiApplicantPanelManager.IsPassportOpened)
+        {
+            // Show a friendly message in the result text area
+            uiManager.UpdateResultText(resultText, "Please open the passport before making a decision.");
+            Debug.Log("Player attempted to deny without opening the passport.");
+            return;
+        }
+
+        // Proceed with evaluation
         EvaluateDecision(false);
     }
 
@@ -83,9 +100,9 @@ public class DecisionManager : MonoBehaviour
             }
             else
             {
+                gameController.AddFine(); // Add fine for invalid approval
                 AdjustReputation(-reputationPenalty);
-                GameOver("You approved an invalid applicant! Critical Error.");
-                return;
+                uiManager.UpdateResultText(resultText, "Invalid applicant approved! Fine incurred.");
             }
         }
         else
@@ -96,16 +113,14 @@ public class DecisionManager : MonoBehaviour
             }
             else
             {
-                AdjustReputation(-reputationPenalty);
-                uiManager.UpdateResultText(resultText, "Wrong Decision! Valid applicant denied.");
+                AdjustReputation(-reputationPenalty); // Adjust reputation for valid denial
+                uiManager.UpdateResultText(resultText, "Valid applicant denied! Reputation penalty applied.");
             }
         }
 
-        if (!isGameOver)
-        {
-            Invoke(nameof(InvokeLoadNextApplicant), DecisionDelay);
-        }
+        Invoke(nameof(InvokeLoadNextApplicant), DecisionDelay);
     }
+
 
     private void AdjustReputation(int amount)
     {
@@ -118,9 +133,10 @@ public class DecisionManager : MonoBehaviour
 
         if (currentReputation <= 0)
         {
-            GameOver("Your reputation has dropped to zero! Game Over.");
+            Debug.Log("Reputation dropped to zero. The player can still process applicants until the end of the day.");
         }
     }
+
 
     private void GameOver(string message)
     {
@@ -134,7 +150,19 @@ public class DecisionManager : MonoBehaviour
     {
         if (applicantManager.AreAllApplicantsProcessed())
         {
-            gameController.ShowEndOfDayMessage(currentReputation <= 0);
+            // Show end-of-day summary
+            int endOfDayEarnings = gameController.CalculateEndOfDayEarnings(currentReputation > 0);
+            gameController.AddCoins(endOfDayEarnings);
+
+            if (currentReputation > 0)
+            {
+                gameController.ShowEndOfDayMessage(false); // Successful day
+            }
+            else
+            {
+                gameController. ShowEndOfDayMessage(true); // Unsuccessful day with summary
+            }
+
             return;
         }
 
@@ -143,12 +171,9 @@ public class DecisionManager : MonoBehaviour
             Applicant nextApplicant = applicantManager.GetCurrentApplicant();
             if (nextApplicant != null)
             {
+                uiApplicantPanelManager.CloseDocument(); // Reset for the next applicant
                 uiApplicantPanelManager.UpdateApplicantUI(nextApplicant);
-                uiManager.UpdateResultText(resultText, "");
-            }
-            else
-            {
-                Debug.LogError("Failed to retrieve the next applicant!");
+                uiManager.UpdateResultText(resultText, "Awaiting decision...");
             }
         }
         else
@@ -156,4 +181,8 @@ public class DecisionManager : MonoBehaviour
             Debug.Log("No more applicants to load.");
         }
     }
+
+
+
+
 }
